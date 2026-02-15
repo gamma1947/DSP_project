@@ -7,6 +7,7 @@ Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on
 
 import QtQuick
 import QtQuick.Controls
+import QtGraphs
 
 Rectangle {
     id: screen2
@@ -204,5 +205,172 @@ Rectangle {
         bottomRightRadius: 10
         bottomLeftRadius: 10
     }
+
+    Rectangle {
+        id: rectangle5
+        x: 200
+        y: 220
+        width: 370
+        height: 150
+        opacity: 0.4
+        color: "#ffffff"
+        bottomRightRadius: 20
+        bottomLeftRadius: 20
+        topRightRadius: 20
+        topLeftRadius: 20
+    }
+
+    Rectangle {
+        id: rectangle6
+        x: 610
+        y: 220
+        width: 370
+        height: 150
+        opacity: 0.4
+        color: "#ffffff"
+        topRightRadius: 20
+        topLeftRadius: 20
+        bottomRightRadius: 20
+        bottomLeftRadius: 20
+    }
+
+    Rectangle {
+        id: rectangle7
+        x: 1020
+        y: 220
+        width: 370
+        height: 150
+        opacity: 0.4
+        color: "#ffffff"
+        topRightRadius: 20
+        topLeftRadius: 20
+        bottomRightRadius: 20
+        bottomLeftRadius: 20
+    }
+
+    Rectangle {
+        id: rectangle8
+        x: 1430
+        y: 220
+        width: 370
+        height: 150
+        opacity: 0.4
+        color: "#ffffff"
+        topRightRadius: 20
+        topLeftRadius: 20
+        bottomRightRadius: 20
+        bottomLeftRadius: 20
+    }
+
+    Switch {
+        id: switch1
+        x: 1046
+        y: 489
+        text: qsTr("Realtime")
+    }
+
+    GraphsView {
+        id: area
+        x: 200
+        y: 451
+        width: 980
+        height: 503
+        opacity: 0.8
+        marginTop: 100
+        marginBottom: 100
+        ValueAxis {
+            id: valueAxisX
+            min: 0
+            max: 10
+        }
+
+        ValueAxis {
+            id: valueAxisY
+            min: 0
+            max: 10
+        }
+
+        AreaSeries {
+            name: "AreaSeries"
+            upperSeries: lineSeries
+            LineSeries {
+                id: lineSeries
+                XYPoint {
+                    x: 0
+                    y: 1.5
+                }
+
+                XYPoint {
+                    x: 1
+                    y: 3
+                }
+
+                XYPoint {
+                    x: 6
+                    y: 6.3
+                }
+
+                XYPoint {
+                    x: 10
+                    y: 3.1
+                }
+            }
+        }
+
+
+        axisY: valueAxisY
+        axisX: valueAxisX
+    }
+
+    Rectangle {
+        id: rectangle9
+        x: 1280
+        y: 451
+        width: 525
+        height: 503
+        opacity: 0.4
+        color: "#ffffff"
+        topRightRadius: 20
+        topLeftRadius: 20
+        bottomRightRadius: 20
+        bottomLeftRadius: 20
+    }
+
+    Text {
+        id: text6
+        x: 1305
+        y: 470
+        text: qsTr("Recent Alerts")
+        font.pixelSize: 30
+    }
+
+    Text {
+        id: text7
+        x: 240
+        y: 470
+        text: qsTr("PM 2.5 Levels over Time")
+        font.pixelSize: 30
+    }
+
+    Text {
+        id: text8
+        x: 276
+        y: 240
+        color: "#177b28"
+        text: qsTr("Current P.M. 2.5")
+        font.pixelSize: 20
+    }
+
+    Text {
+        id: text9
+        x: 276
+        y: 271
+        color: "#000000"
+        text: qsTr("118 mu/m3")
+        font.pixelSize: 20
+    }
+
+
+
 
 }
