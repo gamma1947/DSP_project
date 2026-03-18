@@ -6,7 +6,7 @@ from openaq import OpenAQ as aq
 # -----------------------------
 
 #Create an OpenAQ account and use your API key here
-api = aq(api_key="7your api key")
+api = aq(api_key="703567a9b637449ffb21acf96659f4a58d69761753e4e1082ab6fb84232652de")
 
 locations = api.locations.list(
     countries_id=9,
