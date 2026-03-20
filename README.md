@@ -1,3 +1,6 @@
+# Project status report 10th march
+[report](mini-project_report__air_quality_monitoring_dashboard.pdf)
+
 # Air Quality Monitoring Dashboard
 
 An interactive **Air Quality Monitoring Dashboard** built using real-world environmental sensor data.  
