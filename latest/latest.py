@@ -6,20 +6,20 @@ import os
 # -----------------------------
 # Config
 # -----------------------------
-param_dict = {"pm10": 1, "pm25": 2, "co": 4, "no2": 5}
+param_dict = {"pm10": 1, "pm25": 2, "o3":3}
 
 LIMIT = 1000
 BBOX = (76.5, 28.05, 78.29, 29.18)
 
 headers = {
     "accept": "application/json",
-    "X-API-Key": "ADD YOUR API KEY HERE"
+    "X-API-Key": "703567a9b637449ffb21acf96659f4a58d69761753e4e1082ab6fb84232652de"
 }
 
 # -----------------------------
 # Time: last 3 hours
 # -----------------------------
-dt_min = (datetime.now(timezone.utc) - timedelta(hours=1)).replace(second=0, microsecond=0)
+dt_min = (datetime.now(timezone.utc) - timedelta(hours=3)).replace(second=0, microsecond=0)
 dt_min_str = dt_min.isoformat().replace("+00:00", "Z")
 
 print("datetime_from:", dt_min_str)
@@ -51,7 +51,7 @@ for pname, pid in param_dict.items():
         params = {
             "limit": LIMIT,
             "page": page,
-            "datetime_from": dt_min_str   # <-- FIXED
+            "datetime_min": dt_min_str   # <-- FIXED
         }
 
         response = requests.get(BASE_URL, headers=headers, params=params)
