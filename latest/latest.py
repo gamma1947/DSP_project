@@ -27,7 +27,7 @@ def in_bbox(lon, lat, bbox):
 # Loop over parameters
 # -----------------------------
 
-def get_latest(nhrs=1, bbox = (76.5, 28.05, 78.29, 29.18), param_dict = {"pm10": 1, "pm25": 2, "o3":3}, save=):
+def get_latest(nhrs=3, bbox = (76.5, 28.05, 78.29, 29.18), param_dict = {"pm10": 1, "pm25": 2, "o3":3}, save=True ):
     """
     Get the latest data from OpenAQ API 
     nhrs => number of hours before current time to be set as datetime_min for data
@@ -126,4 +126,5 @@ def get_latest(nhrs=1, bbox = (76.5, 28.05, 78.29, 29.18), param_dict = {"pm10":
 # -----------------------------
     return dfs
 
-if __name__ =
+if __name__ == "__main__":
+	get_latest()
