@@ -1,6 +1,7 @@
 import geopandas as gpd
 import folium
 import pandas as pd
+import numpy as np
 from shapely.geometry import Point
 from folium.plugins import HeatMap
 
@@ -61,12 +62,13 @@ def compute_aqi(row):
 aqi_df["aqi"] = aqi_df.apply(compute_aqi, axis=1)
 
 # -----------------------------
-# NORMALIZE AQI (🔥 IMPORTANT FIX)
+# 🔥 FIX: Log scaling + normalization
 # -----------------------------
-max_aqi = aqi_df["aqi"].max()
+aqi_df["aqi_scaled"] = np.log1p(aqi_df["aqi"])  # amplify contrast
+max_val = aqi_df["aqi_scaled"].max()
 
 heat_data = [
-    [row["latitude"], row["longitude"], row["aqi"] / max_aqi]
+    [row["latitude"], row["longitude"], row["aqi_scaled"] / max_val]
     for _, row in aqi_df.iterrows()
     if not pd.isna(row["latitude"]) and not pd.isna(row["longitude"])
 ]
@@ -95,13 +97,13 @@ folium.GeoJson(
 ).add_to(m)
 
 # -----------------------------
-# 🔥 ADD HEATMAP FIRST
+# 🔥 Add AQI Heatmap FIRST
 # -----------------------------
 HeatMap(
     heat_data,
-    radius=25,
-    blur=35,
-    min_opacity=0.4
+    radius=30,      # stronger spread
+    blur=40,        # smoother glow
+    min_opacity=0.5
 ).add_to(m)
 
 # -----------------------------
