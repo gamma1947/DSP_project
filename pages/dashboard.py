@@ -8,7 +8,7 @@ st.set_page_config(page_title="Urban Air Dashboard", layout="wide", initial_side
 
 # 2. BULLETPROOF SECURITY CHECK: Boot them out if they don't have the VIP pass
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
-    st.switch_page("main.py")
+    st.switch_page("../main.py")
 
 # 3. Clean Enterprise CSS
 st.markdown("""
@@ -90,7 +90,7 @@ with head_col1:
 with head_col2:
     if st.button("Logout", use_container_width=True):
         st.session_state.logged_in = False
-        st.switch_page("main.py")
+        st.switch_page("../main.py")
 
 # --- TOP FILTER ROW ---
 f1, f2, f3, f4, f5 = st.columns([1, 1, 1, 1.5, 0.8])

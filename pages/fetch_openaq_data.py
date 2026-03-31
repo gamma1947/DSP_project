@@ -4,7 +4,7 @@ import time
 
 api = OpenAQ(api_key="YOUR_API_KEY")
 
-df = pd.read_csv("full_location_info.csv")
+df = pd.read_csv("../data/full_location_info.csv")
 
 df["latitude"] = df["coordinates"].apply(
     lambda x: eval(x).get("latitude") if isinstance(x, str) else None

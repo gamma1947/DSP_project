@@ -9,7 +9,7 @@ from folium.plugins import HeatMap
 # Load data
 # -----------------------------
 states = gpd.read_file("india_states.geojson")
-df = pd.read_csv("location.csv")
+df = pd.read_csv("../data/location.csv")
 
 df = df.dropna(subset=["latitude", "longitude"])
 
@@ -30,7 +30,7 @@ stations_with_state = gpd.sjoin(
 # -----------------------------
 # Load AQI data
 # -----------------------------
-aqi_df = pd.read_csv("india_aqi_data.csv")
+aqi_df = pd.read_csv("../data/india_aqi_data.csv")
 
 # -----------------------------
 # AQI Calculation (weighted)
