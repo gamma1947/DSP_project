@@ -25,7 +25,7 @@ headers = {
 # Loop over parameters
 # -----------------------------
 
-def get_latest(nhrs=5, shp_path="ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp", param_dict = {"pm10": 1, "pm25": 2, "o3":3}, save=True ):
+def get_latest_india(nhrs=5, shp_path="ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp", param_dict = {"pm10": 1, "pm25": 2, "o3":3}, save=True ):
     """
     Get the latest data from OpenAQ API 
     nhrs => number of hours before current time to be set as datetime_min for data
