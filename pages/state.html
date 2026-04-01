@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>State Air Quality Dashboard</title>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -194,221 +193,233 @@
             </div>
 
             <div class="card">
-                <h3 id="chartTitle">PM 2.5 Trend (Past 7 Days)</h3>
-                <div class="chart-container">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
+    <h3>Pollutant Trends (24h)</h3>
+    <div id="pollutantCharts"></div>
+</div>
+
         </div>
     </div>
 </div>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<style>
+.pollutant-chart {
+    margin-bottom: 15px;
+}
+
+.pollutant-label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.chart-box {
+    height: 80px;
+    width: 100%;
+}
+</style>
 <script>
-// GET STATE FROM URL
-const params = new URLSearchParams(window.location.search);
-let stateName = params.get("state") || "Maharashtra";
+    // =========================
+    // CONFIG
+    // =========================
+    const params = new URLSearchParams(window.location.search);
+    let stateName = params.get("state") || "Maharashtra";
 
-// Normalize filename
-const stateFile = stateName.toLowerCase().replace(/\s+/g, '');
+    const stateFile = stateName.toLowerCase().replace(/\s+/g, '');
 
-document.getElementById("stateTitle").innerText = "Analysis: " + stateName;
-document.getElementById("chartTitle").innerText = "PM 2.5 Trend in " + stateName;
+    document.getElementById("stateTitle").innerText = "Analysis: " + stateName;
 
-// INIT MAP
-const map = L.map('map', {
-    zoomControl: true,
-    attributionControl: false
-}).setView([22, 80], 5);
+    // =========================
+    // INIT MAP
+    // =========================
+    const map = L.map('map', {
+        zoomControl: true,
+        attributionControl: false
+    }).setView([22, 80], 5);
 
-// LIGHT TILE (for city names)
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-    attribution: ''
-}).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png').addTo(map);
+// -----------------------------
+// Generate time labels (15 min)
+// -----------------------------
+function generateTimeLabels() {
+    let labels = [];
+    for (let i = 0; i < 24 * 4; i++) {
+        const hour = Math.floor(i / 4);
+        const min = (i % 4) * 15;
+        labels.push(`${hour}:${min.toString().padStart(2, '0')}`);
+    }
+    return labels;
+}
 
-// LOAD STATE GEOJSON
-// LOAD STATE GEOJSON
-fetch(`./states_geojson/${stateFile}.geojson`)
-.then(res => {
-    if (!res.ok) throw new Error("GeoJSON not found");
-    return res.json();
-})
-.then(data => {
+// -----------------------------
+// Generate dummy data
+// -----------------------------
+function generateData(maxVal) {
+    return Array.from({ length: 96 }, () =>
+        Math.floor(Math.random() * maxVal)
+    );
+}
 
-    // 1. THE MASK: Draw a solid white blanket over the map with a hole for the state
-    const mask = turf.mask(data);
-    L.geoJSON(mask, {
-        style: {
-            fillColor: "#ffffff", // Pure white to match your dashboard background
-            fillOpacity: 1,       // Fully solid to hide outside labels completely
-            color: "transparent", // No border on the blanket
-            weight: 0
-        }
-    }).addTo(map);
+const pollutants = [
+    { id: "pm25", name: "PM2.5", max: 200 },
+    { id: "pm10", name: "PM10", max: 250 },
+    { id: "o3", name: "O₃", max: 150 },
+    { id: "no2", name: "NO₂", max: 120 },
+    { id: "so2", name: "SO₂", max: 80 },
+    { id: "co", name: "CO", max: 10 }
+];
 
-    // 2. THE STATE: Draw the orange tint and border inside the hole
-    const layer = L.geoJSON(data, {
-        style: {
-            fillColor: "#e67e22",
-            color: "#d35400",
-            weight: 3,
-            fillOpacity: 0.25 // Slightly lower opacity makes the city names easier to read
-        }
-    }).addTo(map);
+const labels = generateTimeLabels();
+const container = document.getElementById("pollutantCharts");
+container.innerHTML = "";
 
-    // FIT TO STATE
-    const bounds = layer.getBounds();
-    map.fitBounds(bounds, { padding: [20, 20] });
+// -----------------------------
+// Create charts
+// -----------------------------
+// STEP 1: create HTML first
+pollutants.forEach(p => {
+    const canvasId = `chart_${p.id}`;
 
-    // RESTRICT PANNING
-    map.setMaxBounds(bounds);
-    map.setMinZoom(map.getZoom());
-
-})
-.catch(err => {
-    console.error(err);
-    alert("State map not found: " + stateFile);
+    container.innerHTML += `
+        <div class="pollutant-chart">
+            <div class="pollutant-label">${p.name}</div>
+            <div class="chart-box">
+                <canvas id="${canvasId}"></canvas>
+            </div>
+        </div>
+    `;
 });
+
+// STEP 2: create charts AFTER DOM is ready
+setTimeout(() => {
+    pollutants.forEach(p => {
+
+        const canvasId = `chart_${p.id}`;
+
+        new Chart(document.getElementById(canvasId), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: generateData(p.max),
+                    backgroundColor: "#2ecc71",
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                }
+            }
+        });
+
+    });
+}, 100);
+
+    // =========================
+    // LOAD GEOJSON + HEATMAP
+    // =========================
+    fetch(`./states_geojson/${stateFile}.geojson`)
+    .then(res => {
+        if (!res.ok) throw new Error("GeoJSON not found");
+        return res.json();
+    })
+    .then(data => {
+
+        // ---------------------
+        // MASK
+        // ---------------------
+        const mask = turf.mask(data);
+        L.geoJSON(mask, {
+            style: {
+                fillColor: "#ffffff",
+                fillOpacity: 1,
+                color: "transparent",
+                weight: 0
+            },
+            interactive: false
+        }).addTo(map);
+
+        // ---------------------
+        // STATE BORDER
+        // ---------------------
+        const layer = L.geoJSON(data, {
+            style: {
+                fillColor: "#e67e22",
+                color: "#d35400",
+                weight: 3,
+                fillOpacity: 0.2
+            }
+        }).addTo(map);
+
+        const bounds = layer.getBounds();
+        map.fitBounds(bounds, { padding: [20, 20] });
+        map.setMaxBounds(bounds);
+        map.setMinZoom(map.getZoom());
+
+        // ---------------------
+        // FETCH AQ DATA
+        // ---------------------
+        return fetch("https://api.openaq.org/v2/latest?limit=1000&country=IN")
+        .then(res => res.json())
+        .then(apiData => {
+
+            let heatData = [];
+
+            apiData.results.forEach(station => {
+
+                if (!station.coordinates) return;
+
+                const pm25 = station.measurements.find(m => m.parameter === "pm25");
+                if (!pm25) return;
+
+                const lat = station.coordinates.latitude;
+                const lon = station.coordinates.longitude;
+
+                const pt = turf.point([lon, lat]);
+
+                // ✅ STATE FILTER
+                if (turf.booleanPointInPolygon(pt, data.features[0])) {
+
+                    const intensity = Math.min(pm25.value / 300, 1);
+                    heatData.push([lat, lon, intensity]);
+                }
+            });
+
+            // ---------------------
+            // HEATMAP
+            // ---------------------
+            L.heatLayer(heatData, {
+                radius: 35,
+                blur: 20,
+                maxZoom: 10,
+                gradient: {
+                    0.2: "green",
+                    0.4: "yellow",
+                    0.6: "orange",
+                    0.8: "red",
+                    1.0: "purple"
+                }
+            }).addTo(map);
+        });
+
+    })
+    .catch(err => {
+        console.error("Error:", err);
+    });
+
+    // =========================
+    // NAV
+    // =========================
+    function goBack() {
+        window.history.back();
+    }
 </script>
-
-<!--<script>-->
-<!--    // 1. SETUP STATIC MAP (No tiles, no dragging)-->
-<!--    const map = L.map('map', {-->
-<!--        zoomControl: false,-->
-<!--        dragging: true,-->
-<!--        scrollWheelZoom: true,-->
-<!--        doubleClickZoom: false,-->
-<!--        touchZoom: false-->
-<!--    }).setView([22, 80], 4);-->
-
-<!--L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {-->
-<!--    attribution: '',-->
-<!--    maxZoom: 20-->
-<!--}).addTo(map);-->
-
-<!--    // 2. READ URL PARAMETERS-->
-<!--    const params = new URLSearchParams(window.location.search);-->
-<!--    let rawState = params.get("state");-->
-<!--    let stateName = rawState ? decodeURIComponent(rawState) : "Chhattisgarh";-->
-
-<!--    document.getElementById("stateTitle").innerText = "Analysis: " + stateName;-->
-<!--    document.getElementById("chartTitle").innerText = `PM 2.5 Trend in ${stateName}`;-->
-
-<!--    // 3. FETCH LOCAL GEOJSON DATA-->
-<!--    const geoJsonUrl = "./india_states.geojson"; // MUST be in the same folder-->
-
-<!--    fetch(geoJsonUrl)-->
-<!--    .then(res => {-->
-<!--        if (!res.ok) throw new Error("Could not load local geojson file.");-->
-<!--        return res.json();-->
-<!--    })-->
-<!--    .then(data => {-->
-<!--        // Alias dictionary to handle spelling differences-->
-<!--        const stateAliases = {-->
-<!--            "chhattisgarh": ["chattisgarh", "chhatisgarh", "cg"],-->
-<!--            "odisha": ["orissa"],-->
-<!--            "uttarakhand": ["uttaranchal"],-->
-<!--            "telangana": ["telengana"],-->
-<!--            "delhi": ["nctofdelhi", "newdelhi"],-->
-<!--            "andamanandnicobarislands": ["andamanandnicobar", "andaman"],-->
-<!--            "jammuandkashmir": ["jammukashmir", "jk"]-->
-<!--        };-->
-
-<!--        let targetName = stateName.toLowerCase().replace(/[^a-z0-9]/g, '');-->
-
-<!--        // Find the specific state polygon-->
-<!--        const stateFeature = data.features.find(f => {-->
-<!--            const props = f.properties;-->
-<!--            const rawGeoName = props.ST_NM || props.NAME_1 || props.name || props.id || "";-->
-<!--            const geoName = rawGeoName.toLowerCase().replace(/[^a-z0-9]/g, '');-->
-
-<!--            if (geoName === targetName) return true;-->
-<!--            if (stateAliases[targetName] && stateAliases[targetName].includes(geoName)) return true;-->
-<!--            if (stateAliases[geoName] && stateAliases[geoName].includes(targetName)) return true;-->
-<!--            return false;-->
-<!--        });-->
-
-<!--        if (stateFeature) {-->
-<!--            // -&#45;&#45; STEP A: DRAW THE STATE FIRST -&#45;&#45;-->
-<!--            const stateLayer = L.geoJSON(stateFeature, {-->
-<!--                style: {-->
-<!--                    fillColor: "#e67e22", // Dashboard Orange-->
-<!--                    color: "#d35400",     // Darker Border-->
-<!--                    weight: 2,-->
-<!--                    fillOpacity: 0.3-->
-<!--                }-->
-<!--            }).addTo(map);-->
-
-<!--            // Zoom the map to fit exactly around this state-->
-<!--            map.fitBounds(stateLayer.getBounds(), { padding: [30, 30] });-->
-
-<!--            // -&#45;&#45; STEP B: DRAW MARKERS SECOND (So they sit on top!) -&#45;&#45;-->
-
-<!--            // Note: Since I don't know your exact marker coordinates,-->
-<!--            // I'm using the center of the state polygon to place a sample marker.-->
-<!--            // You will replace this with your actual database markers.-->
-<!--            const centerPoint = stateLayer.getBounds().getCenter();-->
-
-<!--            L.circleMarker([centerPoint.lat, centerPoint.lng], {-->
-<!--                color: '#ffffff',     // White border-->
-<!--                fillColor: '#c0392b', // Red center-->
-<!--                fillOpacity: 1,-->
-<!--                radius: 8,-->
-<!--                weight: 2-->
-<!--            }).addTo(map).bindPopup("<b>Main Monitoring Station</b><br>AQI: 188");-->
-
-<!--            // Add a standard pin nearby as another example-->
-<!--            L.marker([centerPoint.lat + 0.5, centerPoint.lng + 0.5])-->
-<!--             .addTo(map)-->
-<!--             .bindPopup("Secondary Station");-->
-
-<!--        } else {-->
-<!--            console.error("Could not find state:", stateName);-->
-<!--            alert("Map boundary data not found for: " + stateName);-->
-<!--        }-->
-<!--    })-->
-<!--    .catch(err => {-->
-<!--        console.error("File Error:", err);-->
-<!--        alert("Error loading map data. Make sure india_states.geojson is saved in the same folder and you are using Live Server.");-->
-<!--    });-->
-
-<!--    // 4. CHART.JS SETUP-->
-<!--    const ctx = document.getElementById('trendChart').getContext('2d');-->
-<!--    new Chart(ctx, {-->
-<!--        type: 'line',-->
-<!--        data: {-->
-<!--            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],-->
-<!--            datasets: [{-->
-<!--                label: 'PM 2.5 Level',-->
-<!--                data: [155, 172, 188, 162, 145, 132, 140],-->
-<!--                borderColor: '#e67e22',-->
-<!--                backgroundColor: 'rgba(230, 126, 34, 0.1)',-->
-<!--                fill: true,-->
-<!--                tension: 0.4,-->
-<!--                pointRadius: 5,-->
-<!--                pointBackgroundColor: '#e67e22'-->
-<!--            }]-->
-<!--        },-->
-<!--        options: {-->
-<!--            responsive: true,-->
-<!--            maintainAspectRatio: false,-->
-<!--            plugins: { legend: { display: false } },-->
-<!--            scales: {-->
-<!--                y: { beginAtZero: false, grid: { color: '#f0f0f0' } },-->
-<!--                x: { grid: { display: false } }-->
-<!--            }-->
-<!--        }-->
-<!--    });-->
-
-<!--    // 5. NAVIGATION-->
-<!--    function goBack() {-->
-<!--        window.history.back(); // Or replace with: window.location.href = "india_map.html";-->
-<!--    }-->
-
-<!--    // 6. FIX LEAFLET FLEXBOX RENDERING BUG-->
-<!--    window.addEventListener('load', function() {-->
-<!--        setTimeout(() => map.invalidateSize(), 500);-->
-<!--    });-->
-<!--</script>-->
 
 </body>
 </html>
