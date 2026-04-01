@@ -126,6 +126,6 @@ for _, row in stations_with_state.iterrows():
 # -----------------------------
 # Save map
 # -----------------------------
-m.save("india_aqi_heatmap.html")
+m.save("india_map.html")
 
-print("Done → india_aqi_heatmap.html")
+print("Done → india_map.html")
