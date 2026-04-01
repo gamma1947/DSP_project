@@ -20,7 +20,7 @@
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--primary);
         }
@@ -31,67 +31,69 @@
             margin: auto;
         }
 
+        /* --- GRID LAYOUT --- */
+        /* GRID LAYOUT */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 24px;
+            grid-template-areas:
+                "map metrics"
+                "map pollutants"
+                "co2-trend co2-trend"
+                "extra extra";
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 10px 0 20px 0;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 25px;
         }
 
         .title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .logout {
-            padding: 10px 24px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .logout:hover {
-            background: #f0f0f0;
-        }
-
-        .main {
-            display: flex;
-            gap: 25px;
-        }
-
-        .left {
-            flex: 1.2;
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .right {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            color: var(--primary);
         }
 
         .card {
             background: var(--card-bg);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
         }
 
         .card h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 18px;
-            color: #555;
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+
+        /* Assigning areas to specific divs */
+        .map-section {
+            grid-area: map;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            flex-grow: 1;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metrics-section {
+            grid-area: metrics;
         }
 
         .kpi-container {
@@ -101,23 +103,87 @@
 
         .kpi {
             flex: 1;
-            background: #f8f9fb;
             padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #edf2f7;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
         }
 
         .kpi-title {
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 600;
             color: #94a3b8;
-            text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .kpi-value {
             font-size: 24px;
-            font-weight: 700;
+            font-weight: 800;
+        }
+
+        .aqi-badge {
+            background: var(--warning);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 24px;
+        }
+
+
+        .pollutants-section {
+            grid-area: pollutants;
+        }
+
+        #pollutantCharts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .pollutant-card {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .co2-section {
+            grid-area: co2-trend;
+        }
+
+        #co2TrendCanvas {
+            height: 250px !important;
+        }
+
+        .extra-section {
+            grid-area: extra-row;
+            min-height: 100px;
+        }
+
+
+        /* Chart Heights */
+        .chart-box {
+            height: 60px;
+            width: 100%;
+        }
+
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas: "metrics" "map" "pollutants" "co2-trend";
+            }
+        }
+
+        .main {
+            display: flex;
+            gap: 25px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #555;
         }
 
         .aqi {
@@ -125,18 +191,11 @@
         }
 
         .chart-container {
-            height: 300px;
+            height: 500px;
             width: 100%;
             position: relative;
         }
 
-        /* MAP STYLING: Set to white/transparent so it blends with the card */
-        #map {
-            width: 100%;
-            height: 550px;
-            border-radius: 12px;
-            background: #ffffff;
-        }
 
         .back-btn {
             margin-top: 15px;
@@ -154,8 +213,9 @@
             background: #e2e8f0;
         }
 
-        @media (max-width: 900px) {
-            .main { flex-direction: column; }
+        #coTrend {
+            height: 200px !important;
+            width: 100% !important;
         }
     </style>
 </head>
@@ -163,61 +223,66 @@
 
 <div class="container">
     <div class="header">
-        <div class="title" id="stateTitle">Loading State Data...</div>
-        <button class="logout">Logout</button>
+        <div class="title" id="stateTitle" style="font-size: 24px; font-weight: 800;">Loading State Data...</div>
     </div>
 
-    <div class="main">
-        <div class="left">
+
+    <div class="dashboard-grid">
+        <div class="card map-section">
             <div id="map"></div>
-            <button class="back-btn" onclick="goBack()">← Back to National View</button>
+            <button style="margin-top:10px; border:none; padding:10px; cursor:pointer; border-radius:8px;">← Back to
+                National View
+            </button>
         </div>
 
-        <div class="right">
-            <div class="card">
-                <h3>Live Air Metrics</h3>
-                <div class="kpi-container">
-                    <div class="kpi">
-                        <div class="kpi-title">Current PM 2.5</div>
-                        <div class="kpi-value">132 <small style="font-size: 12px;">µg/m³</small></div>
-                    </div>
-                    <div class="kpi">
-                        <div class="kpi-title">Avg. PM 2.5</div>
-                        <div class="kpi-value">162 <small style="font-size: 12px;">µg/m³</small></div>
-                    </div>
-                    <div class="kpi">
-                        <div class="kpi-title">Overall AQI</div>
-                        <div class="kpi-value aqi">188</div>
-                    </div>
+        <div class="card metrics-section">
+            <h3 style="margin-top:0">Live Air Metrics</h3>
+            <div class="kpi-container">
+                <div class="kpi">
+                    <div class="kpi-title">PM 2.5</div>
+                    <div class="kpi-value">132</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">Avg. PM</div>
+                    <div class="kpi-value">162</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">AQI</div>
+                    <div class="kpi-value" style="color:orange">188</div>
                 </div>
             </div>
-
-            <div class="card">
-    <h3>Pollutant Trends (24h)</h3>
-    <div id="pollutantCharts"></div>
-</div>
-
         </div>
+
+        <div class="card pollutants-section">
+            <h3 style="margin-top:0">Pollutants Daily</h3>
+            <div id="pollutantCharts">
+            </div>
+        </div>
+        <div class="card co2-section">
+            <h3 style="margin-top:0">CO2 3 Months Trend</h3>
+            <canvas id="co2TrendCanvas"></canvas>
+        </div>
+
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 <style>
-.pollutant-chart {
-    margin-bottom: 15px;
-}
+    .pollutant-chart {
+        margin-bottom: 15px;
+    }
 
-.pollutant-label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 5px;
-}
+    .pollutant-label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
 
-.chart-box {
-    height: 80px;
-    width: 100%;
-}
+    .chart-box {
+        height: 80px;
+        width: 100%;
+    }
 </style>
 <script>
     // =========================
@@ -239,179 +304,205 @@
     }).setView([22, 80], 5);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png').addTo(map);
-// -----------------------------
-// Generate time labels (15 min)
-// -----------------------------
-function generateTimeLabels() {
-    let labels = [];
-    for (let i = 0; i < 24 * 4; i++) {
-        const hour = Math.floor(i / 4);
-        const min = (i % 4) * 15;
-        labels.push(`${hour}:${min.toString().padStart(2, '0')}`);
-    }
-    return labels;
-}
 
-// -----------------------------
-// Generate dummy data
-// -----------------------------
-function generateData(maxVal) {
-    return Array.from({ length: 96 }, () =>
-        Math.floor(Math.random() * maxVal)
-    );
-}
 
-const pollutants = [
-    { id: "pm25", name: "PM2.5", max: 200 },
-    { id: "pm10", name: "PM10", max: 250 },
-    { id: "o3", name: "O₃", max: 150 },
-    { id: "no2", name: "NO₂", max: 120 },
-    { id: "so2", name: "SO₂", max: 80 },
-    { id: "co", name: "CO", max: 10 }
-];
+    // --- Data Generators ---
+    const genLabels = (count) => Array.from({length: count}, (_, i) => `${i}:00`);
+    const genData = (count, max) => Array.from({length: count}, () => Math.floor(Math.random() * max));
 
-const labels = generateTimeLabels();
-const container = document.getElementById("pollutantCharts");
-container.innerHTML = "";
+    // --- Pollutant Charts ---
+    const pollutants = [
+        {id: "pm25", name: "PM 2.5", max: 200, color: '#3b82f6'},
+        {id: "pm10", name: "PM 10", max: 250, color: '#10b981'},
+        {id: "no2", name: "NO₂", max: 100, color: '#f59e0b'},
+        {id: "so2", name: "SO₂", max: 80, color: '#ef4444'}
+    ];
 
-// -----------------------------
-// Create charts
-// -----------------------------
-// STEP 1: create HTML first
-pollutants.forEach(p => {
-    const canvasId = `chart_${p.id}`;
-
-    container.innerHTML += `
-        <div class="pollutant-chart">
-            <div class="pollutant-label">${p.name}</div>
-            <div class="chart-box">
-                <canvas id="${canvasId}"></canvas>
-            </div>
-        </div>
-    `;
-});
-
-// STEP 2: create charts AFTER DOM is ready
-setTimeout(() => {
+    const pollContainer = document.getElementById('pollutantCharts');
     pollutants.forEach(p => {
+        pollContainer.innerHTML += `
+            <div class="pollutant-card">
+                <div style="font-size:12px; font-weight:700; margin-bottom:5px;">${p.name}</div>
+                <div style="height:60px;"><canvas id="chart_${p.id}"></canvas></div>
+            </div>
+        `;
+    });
 
-        const canvasId = `chart_${p.id}`;
+    // STEP 2: create charts AFTER DOM is ready
+    // Wait for DOM to initialize charts
+    setTimeout(() => {
+        pollutants.forEach(p => {
+            new Chart(document.getElementById(`chart_${p.id}`), {
+                type: 'bar',
+                data: {
+                    labels: genLabels(24),
+                    datasets: [{data: genData(24, p.max), backgroundColor: p.color, borderRadius: 4}]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {legend: {display: false}},
+                    scales: {x: {display: false}, y: {display: false}}
+                }
+            });
+        });
 
-        new Chart(document.getElementById(canvasId), {
-            type: 'bar',
+        // --- CO2 Line Chart ---
+        const co2Ctx = document.getElementById('co2TrendCanvas').getContext('2d');
+        const gradient = co2Ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+        new Chart(co2Ctx, {
+            type: 'line',
             data: {
-                labels: labels,
+                labels: Array.from({length: 90}, (_, i) => `Day ${i}`),
                 datasets: [{
-                    data: generateData(p.max),
-                    backgroundColor: "#2ecc71",
-                    borderWidth: 0
+                    label: 'CO2 Level',
+                    data: genData(90, 500),
+                    borderColor: '#10b981',
+                    borderWidth: 3,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.4,
+                    pointRadius: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {legend: {display: false}},
                 scales: {
-                    x: { display: false },
-                    y: { display: false }
+                    y: {grid: {borderDash: [5, 5]}, ticks: {color: '#94a3b8'}},
+                    x: {ticks: {color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10}}
                 }
             }
         });
+    }, 100);
 
-    });
-}, 100);
+
+
+
 
     // =========================
     // LOAD GEOJSON + HEATMAP
     // =========================
     fetch(`./states_geojson/${stateFile}.geojson`)
-    .then(res => {
-        if (!res.ok) throw new Error("GeoJSON not found");
-        return res.json();
-    })
-    .then(data => {
-
-        // ---------------------
-        // MASK
-        // ---------------------
-        const mask = turf.mask(data);
-        L.geoJSON(mask, {
-            style: {
-                fillColor: "#ffffff",
-                fillOpacity: 1,
-                color: "transparent",
-                weight: 0
-            },
-            interactive: false
-        }).addTo(map);
-
-        // ---------------------
-        // STATE BORDER
-        // ---------------------
-        const layer = L.geoJSON(data, {
-            style: {
-                fillColor: "#e67e22",
-                color: "#d35400",
-                weight: 3,
-                fillOpacity: 0.2
-            }
-        }).addTo(map);
-
-        const bounds = layer.getBounds();
-        map.fitBounds(bounds, { padding: [20, 20] });
-        map.setMaxBounds(bounds);
-        map.setMinZoom(map.getZoom());
-
-        // ---------------------
-        // FETCH AQ DATA
-        // ---------------------
-        return fetch("https://api.openaq.org/v2/latest?limit=1000&country=IN")
-        .then(res => res.json())
-        .then(apiData => {
-
-            let heatData = [];
-
-            apiData.results.forEach(station => {
-
-                if (!station.coordinates) return;
-
-                const pm25 = station.measurements.find(m => m.parameter === "pm25");
-                if (!pm25) return;
-
-                const lat = station.coordinates.latitude;
-                const lon = station.coordinates.longitude;
-
-                const pt = turf.point([lon, lat]);
-
-                // ✅ STATE FILTER
-                if (turf.booleanPointInPolygon(pt, data.features[0])) {
-
-                    const intensity = Math.min(pm25.value / 300, 1);
-                    heatData.push([lat, lon, intensity]);
-                }
-            });
+        .then(res => {
+            if (!res.ok) throw new Error("GeoJSON not found");
+            return res.json();
+        })
+        .then(data => {
 
             // ---------------------
-            // HEATMAP
+            // MASK
             // ---------------------
-            L.heatLayer(heatData, {
-                radius: 35,
-                blur: 20,
-                maxZoom: 10,
-                gradient: {
-                    0.2: "green",
-                    0.4: "yellow",
-                    0.6: "orange",
-                    0.8: "red",
-                    1.0: "purple"
+            const mask = turf.mask(data);
+            L.geoJSON(mask, {
+                style: {
+                    fillColor: "#ffffff",
+                    fillOpacity: 1,
+                    color: "transparent",
+                    weight: 0
+                },
+                interactive: false
+            }).addTo(map);
+
+            // ---------------------
+            // STATE BORDER
+            // ---------------------
+            const layer = L.geoJSON(data, {
+                style: {
+                    fillColor: "#e67e22",
+                    color: "#d35400",
+                    weight: 3,
+                    fillOpacity: 0.2
                 }
             }).addTo(map);
+
+            const bounds = layer.getBounds();
+            map.fitBounds(bounds, {padding: [20, 20]});
+            map.setMaxBounds(bounds);
+            map.setMinZoom(map.getZoom());
+
+            // ---------------------
+            // FETCH AQ DATA
+            // ---------------------
+            return fetch("https://api.openaq.org/v2/latest?limit=1000&country=IN")
+                .then(res => res.json())
+                .then(apiData => {
+
+                    let heatData = [];
+
+                    apiData.results.forEach(station => {
+
+                        if (!station.coordinates) return;
+
+                        const pm25 = station.measurements.find(m => m.parameter === "pm25");
+                        if (!pm25) return;
+
+                        const lat = station.coordinates.latitude;
+                        const lon = station.coordinates.longitude;
+
+                        const pt = turf.point([lon, lat]);
+
+                        // ✅ STATE FILTER
+                        if (turf.booleanPointInPolygon(pt, data.features[0])) {
+
+                            const intensity = Math.min(pm25.value / 300, 1);
+                            heatData.push([lat, lon, intensity]);
+                        }
+                    });
+
+                    // ---------------------
+                    // HEATMAP
+                    // ---------------------
+                    L.heatLayer(heatData, {
+                        radius: 35,
+                        blur: 20,
+                        maxZoom: 10,
+                        gradient: {
+                            0.2: "green",
+                            0.4: "yellow",
+                            0.6: "orange",
+                            0.8: "red",
+                            1.0: "purple"
+                        }
+                    }).addTo(map);
+                });
+
+        })
+        .catch(err => {
+            console.error("Error:", err);
         });
 
-    })
-    .catch(err => {
-        console.error("Error:", err);
+    const coData = Array.from({length: 90}, () => Math.random() * 10);
+
+    new Chart(document.getElementById("coTrend"), {
+        type: "line",
+        data: {
+            labels: coLabels,
+            datasets: [{
+                data: coData,
+                borderColor: "#1abc9c",
+                backgroundColor: "rgba(26,188,156,0.2)",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {display: false},
+                y: {display: false}
+            }
+        }
     });
+
+
 
     // =========================
     // NAV
