@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Air Quality Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .container {
+            padding: 25px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        /* --- GRID LAYOUT --- */
+        /* GRID LAYOUT */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 24px;
+            grid-template-areas:
+                "map metrics"
+                "map pollutants"
+                "co2-trend co2-trend"
+                "extra extra";
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0 20px 0;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .card h3 {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+
+        /* Assigning areas to specific divs */
+        .map-section {
+            grid-area: map;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            flex-grow: 1;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metrics-section {
+            grid-area: metrics;
+        }
+
+        .kpi-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .kpi {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+        }
+
+        .kpi-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .aqi-badge {
+            background: var(--warning);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 24px;
+        }
+
+
+        .pollutants-section {
+            grid-area: pollutants;
+        }
+
+        #pollutantCharts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .pollutant-card {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .co2-section {
+            grid-area: co2-trend;
+        }
+
+        #co2TrendCanvas {
+            height: 250px !important;
+        }
+
+        .extra-section {
+            grid-area: extra-row;
+            min-height: 100px;
+        }
+
+
+        /* Chart Heights */
+        .chart-box {
+            height: 60px;
+            width: 100%;
+        }
+
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas: "metrics" "map" "pollutants" "co2-trend";
+            }
+        }
+
+        .main {
+            display: flex;
+            gap: 25px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .aqi {
+            color: var(--accent);
+        }
+
+        .chart-container {
+            height: 500px;
+            width: 100%;
+            position: relative;
+        }
+
+
+        .back-btn {
+            margin-top: 15px;
+            padding: 12px;
+            border: none;
+            background: #edf2f7;
+            color: #4a5568;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .back-btn:hover {
+            background: #e2e8f0;
+        }
+
+        #coTrend {
+            height: 200px !important;
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="title" id="stateTitle" style="font-size: 24px; font-weight: 800;">Loading State Data...</div>
+    </div>
+
+
+    <div class="dashboard-grid">
+        <div class="card map-section">
+            <div id="map"></div>
+        </div>
+
+        <div class="card metrics-section">
+            <h3 style="margin-top:0">Live Air Metrics</h3>
+            <div class="kpi-container">
+                <div class="kpi">
+                    <div class="kpi-title">PM 2.5</div>
+                    <div class="kpi-value">132</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">Avg. PM</div>
+                    <div class="kpi-value">162</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">AQI</div>
+                    <div class="kpi-value" style="color:orange">188</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card pollutants-section">
+            <h3 style="margin-top:0">Pollutants Daily</h3>
+            <div id="pollutantCharts">
+            </div>
+        </div>
+        <div class="card co2-section">
+            <h3 style="margin-top:0">CO2 3 Months Trend</h3>
+            <canvas id="co2TrendCanvas"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<style>
+    .pollutant-chart {
+        margin-bottom: 15px;
+    }
+
+    .pollutant-label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .chart-box {
+        height: 80px;
+        width: 100%;
+    }
+</style>
+<script>
+
+    // --- Data Generators ---
+    const genLabels = (count) => Array.from({length: count}, (_, i) => `${i}:00`);
+    const genData = (count, max) => Array.from({length: count}, () => Math.floor(Math.random() * max));
+
+    // --- Pollutant Charts ---
+    const pollutants = [
+        {id: "pm25", name: "PM 2.5", max: 200, color: '#3b82f6'},
+        {id: "pm10", name: "PM 10", max: 250, color: '#10b981'},
+        {id: "no2", name: "NO₂", max: 100, color: '#f59e0b'},
+        {id: "so2", name: "SO₂", max: 80, color: '#ef4444'}
+    ];
+
+    const pollContainer = document.getElementById('pollutantCharts');
+    pollutants.forEach(p => {
+        pollContainer.innerHTML += `
+            <div class="pollutant-card">
+                <div style="font-size:12px; font-weight:700; margin-bottom:5px;">${p.name}</div>
+                <div style="height:60px;"><canvas id="chart_${p.id}"></canvas></div>
+            </div>
+        `;
+    });
+
+    // STEP 2: create charts AFTER DOM is ready
+    // Wait for DOM to initialize charts
+    setTimeout(() => {
+        pollutants.forEach(p => {
+            new Chart(document.getElementById(`chart_${p.id}`), {
+                type: 'bar',
+                data: {
+                    labels: genLabels(24),
+                    datasets: [{data: genData(24, p.max), backgroundColor: p.color, borderRadius: 4}]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {legend: {display: false}},
+                    scales: {x: {display: false}, y: {display: false}}
+                }
+            });
+        });
+
+        // --- CO2 Line Chart ---
+        const co2Ctx = document.getElementById('co2TrendCanvas').getContext('2d');
+        const gradient = co2Ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+        new Chart(co2Ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 90}, (_, i) => `Day ${i}`),
+                datasets: [{
+                    label: 'CO2 Level',
+                    data: genData(90, 500),
+                    borderColor: '#10b981',
+                    borderWidth: 3,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {legend: {display: false}},
+                scales: {
+                    y: {grid: {borderDash: [5, 5]}, ticks: {color: '#94a3b8'}},
+                    x: {ticks: {color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10}}
+                }
+            }
+        });
+    }, 100);
+    const coLabels = Array.from({length: 90}, (_, i) => i);
+    const coData = Array.from({length: 90}, () => Math.random() * 10);
+
+    new Chart(document.getElementById("co2TrendCanvas"), {
+        type: "line",
+        data: {
+            labels: coLabels,
+            datasets: [{
+                data: coData,
+                borderColor: "#1abc9c",
+                backgroundColor: "rgba(26,188,156,0.2)",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {display: false},
+                y: {display: false}
+            }
+        }
+    });
+
+
+
+    // =========================
+    // NAV
+    // =========================
+    function goBack() {
+        window.history.back();
+    }
+</script>
+<script>
+    // INIT MAP centered on India
+    const map = L.map('map', { attributionControl: false }).setView([22, 80], 5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png').addTo(map);
+
+
+
+    // LOAD NATIONAL GEOJSON
+    fetch('./india_states.geojson')
+        .then(res => {
+            if (!res.ok) throw new Error("GeoJSON not found");
+            return res.json();
+        })
+        .then(data => {
+
+            // ---------------------
+            // MASK
+            // ---------------------
+            const mask = turf.mask(data.features[0]);
+            L.geoJSON(mask, {
+                style: {
+                    fillColor: "#ffffff",
+                    fillOpacity: 1,
+                    color: "transparent",
+                    weight: 0
+                },
+                interactive: false
+            }).addTo(map);
+
+
+            const stateLayer = L.geoJSON(data, {
+                style: {
+                    fillColor: "#34495e",
+                    color: "#ffffff",
+                    weight: 1.5,
+                    fillOpacity: 0.5
+                },
+                onEachFeature: function (feature, layer) {
+                    const name = feature.properties.ST_NM; // Ensure ST_NM matches your GeoJSON key
+
+                    layer.on('mouseover', function() {
+                        this.setStyle({ fillOpacity: 0.8, fillColor: "#e67e22", weight: 3 });
+                    });
+                    layer.on('mouseout', function() { stateLayer.resetStyle(this); });
+
+                    // REDIRECT TO STATE PAGE
+                    layer.on('click', () => {
+                        window.location.href = `state.html?state=${encodeURIComponent(name)}`;
+                    });
+
+                    layer.bindTooltip(name, { sticky: true });
+                }
+            }).addTo(map);
+
+            map.fitBounds(stateLayer.getBounds());
+        });
+</script>
+</body>
+</html>

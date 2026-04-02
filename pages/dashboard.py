@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import streamlit.components.v1 as components
+import os
+
 
 # 1. Page Configuration MUST be the first Streamlit command
 st.set_page_config(page_title="Urban Air Dashboard", layout="wide", initial_sidebar_state="collapsed")
@@ -9,6 +12,12 @@ st.set_page_config(page_title="Urban Air Dashboard", layout="wide", initial_side
 # 2. BULLETPROOF SECURITY CHECK: Boot them out if they don't have the VIP pass
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.switch_page("main.py")
+
+# -------------------------
+# 🆕 MAP STATE (ADDED)
+# -------------------------
+if "show_map" not in st.session_state:
+    st.session_state.show_map = False
 
 # 3. Clean Enterprise CSS
 st.markdown("""
@@ -84,7 +93,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- HEADER & LOGOUT ROW ---
-head_col1, head_col2 = st.columns([8, 1])
+head_col1, head_col2, head_col3 = st.columns([7, 1, 1])
 with head_col1:
     st.markdown('<div class="main-title">Urban Air Quality Control Center</div>', unsafe_allow_html=True)
 with head_col2:
@@ -92,117 +101,143 @@ with head_col2:
         st.session_state.logged_in = False
         st.switch_page("main.py")
 
-# --- TOP FILTER ROW ---
-f1, f2, f3, f4, f5 = st.columns([1, 1, 1, 1.5, 0.8])
+# 🆕 MAP BUTTON
+with head_col3:
+    if not st.session_state.show_map:
+        if st.button("🗺️ Map", use_container_width=True):
+            st.session_state.show_map = True
+    else:
+        if st.button("⬅ Back", use_container_width=True):
+            st.session_state.show_map = False
 
-with f1: city = st.selectbox("City:", ["Pune", "Mumbai", "Delhi"], label_visibility="collapsed")
-with f2: source = st.selectbox("Source:", ["Sensor Network", "Satellite", "CBP"], label_visibility="collapsed")
-with f3: pollutant = st.selectbox("Pollutant:", ["PM 2.5", "PM 10", "NO2"], label_visibility="collapsed")
-with f4: date = st.date_input("Date:", [], label_visibility="collapsed")
-with f5: fetch_btn = st.button("Fetch Data", use_container_width=True)
 
-st.write("")  # Spacer
+# -------------------------
+# VIEW SWITCH (ADDED)
+# -------------------------
+if st.session_state.show_map:
+    st.subheader("Interactive India Map")
 
-# --- DYNAMIC DATA LOGIC ---
-np.random.seed(hash(city + pollutant) % (2 ** 32))
+    try:
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        html_path = os.path.join(BASE_DIR, "../india_map.html")
 
-base_val = 150 if city == "Delhi" else (100 if city == "Mumbai" else 80)
-current_pm25 = int(np.random.normal(base_val, 20))
-current_pm10 = int(current_pm25 * 1.4)
-aqi = int(current_pm25 * 1.2)
+        components.iframe(html_path, height=700)
 
-# Determine AQI Status and Colors
-if aqi < 100:
-    aqi_status, aqi_color = "Good", "#10b981"  # Emerald Green
-elif aqi < 200:
-    aqi_status, aqi_color = "Moderate", "#f59e0b"  # Amber
+    except Exception as e:
+        st.error(f"Error loading map: {e}")
+
 else:
-    aqi_status, aqi_color = "Poor", "#ef4444"  # Red
+    # --- TOP FILTER ROW ---
+    f1, f2, f3, f4, f5 = st.columns([1, 1, 1, 1.5, 0.8])
 
-# --- METRICS ROW (4 Cards) ---
-m1, m2, m3, m4 = st.columns(4)
+    with f1: city = st.selectbox("City:", ["Pune", "Mumbai", "Delhi"], label_visibility="collapsed")
+    with f2: source = st.selectbox("Source:", ["Sensor Network", "Satellite", "CBP"], label_visibility="collapsed")
+    with f3: pollutant = st.selectbox("Pollutant:", ["PM 2.5", "PM 10", "NO2"], label_visibility="collapsed")
+    with f4: date = st.date_input("Date:", [], label_visibility="collapsed")
+    with f5: fetch_btn = st.button("Fetch Data", use_container_width=True)
 
-with m1:
-    with st.container(border=True):
-        st.markdown('<div class="metric-label">Current P.M. 2.5</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-value">{current_pm25} µg/m³</div>', unsafe_allow_html=True)
+    st.write("")  # Spacer
 
-with m2:
-    with st.container(border=True):
-        st.markdown(f'<div class="metric-label">{pollutant} Level</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-value">{current_pm10} µg/m³</div>', unsafe_allow_html=True)
+    # --- DYNAMIC DATA LOGIC ---
+    np.random.seed(hash(city + pollutant) % (2 ** 32))
 
-with m3:
-    with st.container(border=True):
-        st.markdown('<div class="metric-label">Overall AQI</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-value" style="color: {aqi_color};">{aqi} ({aqi_status})</div>',
-                    unsafe_allow_html=True)
+    base_val = 150 if city == "Delhi" else (100 if city == "Mumbai" else 80)
+    current_pm25 = int(np.random.normal(base_val, 20))
+    current_pm10 = int(current_pm25 * 1.4)
+    aqi = int(current_pm25 * 1.2)
 
-with m4:
-    with st.container(border=True):
-        st.markdown('<div class="metric-label">Temperature</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-value">{np.random.randint(25, 38)}°C</div>', unsafe_allow_html=True)
+    # Determine AQI Status and Colors
+    if aqi < 100:
+        aqi_status, aqi_color = "Good", "#10b981"  # Emerald Green
+    elif aqi < 200:
+        aqi_status, aqi_color = "Moderate", "#f59e0b"  # Amber
+    else:
+        aqi_status, aqi_color = "Poor", "#ef4444"  # Red
 
-# --- MAIN CHARTS ROW ---
-c_left, c_right = st.columns([2.5, 1])
+    # --- METRICS ROW (4 Cards) ---
+    m1, m2, m3, m4 = st.columns(4)
 
-with c_left:
-    with st.container(border=True):
-        header_col, toggle_col = st.columns([3, 2])
-        header_col.subheader(f"{pollutant} Trend in {city}")
+    with m1:
+        with st.container(border=True):
+            st.markdown('<div class="metric-label">Current P.M. 2.5</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-value">{current_pm25} µg/m³</div>', unsafe_allow_html=True)
 
-        # ADDED: Time Scale Toggle to hit Rubric Requirement
-        time_scale = toggle_col.radio("Aggregation:", ["Hourly", "Daily", "Monthly", "Realtime"], horizontal=True,
-                                      label_visibility="collapsed")
+    with m2:
+        with st.container(border=True):
+            st.markdown(f'<div class="metric-label">{pollutant} Level</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-value">{current_pm10} µg/m³</div>', unsafe_allow_html=True)
 
-        # Adjust mock data based on the selected time scale
-        if time_scale == "Hourly":
-            x_labels = [f"{i}:00" for i in range(8, 19)]
-            trend = np.linspace(base_val - 30, base_val + 20, 11) + np.random.normal(0, 10, 11)
-        elif time_scale == "Daily":
-            x_labels = [f"Day {i}" for i in range(1, 12)]
-            trend = np.linspace(base_val - 10, base_val + 40, 11) + np.random.normal(0, 15, 11)
-        else:  # Monthly
-            x_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"]
-            trend = np.linspace(base_val + 20, base_val - 20, 11) + np.random.normal(0, 20, 11)
+    with m3:
+        with st.container(border=True):
+            st.markdown('<div class="metric-label">Overall AQI</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-value" style="color: {aqi_color};">{aqi} ({aqi_status})</div>',
+                        unsafe_allow_html=True)
 
-        df = pd.DataFrame({
-            "Time": x_labels,
-            "Level": trend
-        })
+    with m4:
+        with st.container(border=True):
+            st.markdown('<div class="metric-label">Temperature</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-value">{np.random.randint(25, 38)}°C</div>', unsafe_allow_html=True)
 
-        fig = px.area(df, x="Time", y="Level")
+    # --- MAIN CHARTS ROW ---
+    c_left, c_right = st.columns([2.5, 1])
 
-        # Color mapping
-        if pollutant == "PM 2.5":
-            chart_color, fill_color = '#10b981', 'rgba(16, 185, 129, 0.2)'  # Green
-        elif pollutant == "NO2":
-            chart_color, fill_color = '#3b82f6', 'rgba(59, 130, 246, 0.2)'  # Blue
-        else:
-            chart_color, fill_color = '#f59e0b', 'rgba(245, 158, 11, 0.2)'  # Amber
+    with c_left:
+        with st.container(border=True):
+            header_col, toggle_col = st.columns([3, 2])
+            header_col.subheader(f"{pollutant} Trend in {city}")
 
-        fig.update_traces(line_color=chart_color, fillcolor=fill_color)
-        fig.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            margin=dict(l=0, r=0, t=10, b=0),
-            xaxis=dict(showgrid=True, gridcolor='#e2e8f0', title=""),
-            yaxis=dict(showgrid=True, gridcolor='#e2e8f0', title="")
-        )
+            # ADDED: Time Scale Toggle to hit Rubric Requirement
+            time_scale = toggle_col.radio("Aggregation:", ["Hourly", "Daily", "Monthly", "Realtime"], horizontal=True,
+                                          label_visibility="collapsed")
 
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            # Adjust mock data based on the selected time scale
+            if time_scale == "Hourly":
+                x_labels = [f"{i}:00" for i in range(8, 19)]
+                trend = np.linspace(base_val - 30, base_val + 20, 11) + np.random.normal(0, 10, 11)
+            elif time_scale == "Daily":
+                x_labels = [f"Day {i}" for i in range(1, 12)]
+                trend = np.linspace(base_val - 10, base_val + 40, 11) + np.random.normal(0, 15, 11)
+            else:  # Monthly
+                x_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"]
+                trend = np.linspace(base_val + 20, base_val - 20, 11) + np.random.normal(0, 20, 11)
 
-with c_right:
-    with st.container(border=True):
-        st.subheader("System Alerts")
-        st.write("")
+            df = pd.DataFrame({
+                "Time": x_labels,
+                "Level": trend
+            })
 
-        if aqi > 150:
-            st.error(f"⚠️ **Alert:** High {pollutant} detected in {city}.")
-        else:
-            st.success(f"✅ **Status:** {city} air quality is stable.")
+            fig = px.area(df, x="Time", y="Level")
 
-        st.warning(f"🔋 **Station {np.random.randint(1, 20)}:** Sensor battery low.")
-        st.info(f"🔄 **Source:** {source} sync completed.")
+            # Color mapping
+            if pollutant == "PM 2.5":
+                chart_color, fill_color = '#10b981', 'rgba(16, 185, 129, 0.2)'  # Green
+            elif pollutant == "NO2":
+                chart_color, fill_color = '#3b82f6', 'rgba(59, 130, 246, 0.2)'  # Blue
+            else:
+                chart_color, fill_color = '#f59e0b', 'rgba(245, 158, 11, 0.2)'  # Amber
 
-        st.write("\n" * 3)
+            fig.update_traces(line_color=chart_color, fillcolor=fill_color)
+            fig.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                margin=dict(l=0, r=0, t=10, b=0),
+                xaxis=dict(showgrid=True, gridcolor='#e2e8f0', title=""),
+                yaxis=dict(showgrid=True, gridcolor='#e2e8f0', title="")
+            )
+
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+    with c_right:
+        with st.container(border=True):
+            st.subheader("System Alerts")
+            st.write("")
+
+            if aqi > 150:
+                st.error(f"⚠️ **Alert:** High {pollutant} detected in {city}.")
+            else:
+                st.success(f"✅ **Status:** {city} air quality is stable.")
+
+            st.warning(f"🔋 **Station {np.random.randint(1, 20)}:** Sensor battery low.")
+            st.info(f"🔄 **Source:** {source} sync completed.")
+
+            st.write("\n" * 3)
