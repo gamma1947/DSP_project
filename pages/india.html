@@ -230,11 +230,6 @@
     <div class="dashboard-grid">
         <div class="card map-section">
             <div id="map"></div>
-            <a href="india.html" style="margin-top:10px; border:none; padding:10px; cursor:pointer; border-radius:8px;">
-            <button >← Back to
-                National View
-            </button>
-                </a>
         </div>
 
         <div class="card metrics-section">
@@ -287,26 +282,6 @@
     }
 </style>
 <script>
-    // =========================
-    // CONFIG
-    // =========================
-    const params = new URLSearchParams(window.location.search);
-    let stateName = params.get("state") || "Maharashtra";
-
-    const stateFile = stateName.toLowerCase().replace(/\s+/g, '');
-
-    document.getElementById("stateTitle").innerText = "Analysis: " + stateName;
-
-    // =========================
-    // INIT MAP
-    // =========================
-    const map = L.map('map', {
-        zoomControl: true,
-        attributionControl: false
-    }).setView([22, 80], 5);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png').addTo(map);
-
 
     // --- Data Generators ---
     const genLabels = (count) => Array.from({length: count}, (_, i) => `${i}:00`);
@@ -381,125 +356,7 @@
             }
         });
     }, 100);
-
-
-
-
-
-    // =========================
-    // LOAD GEOJSON + HEATMAP
-    // =========================
-    fetch(`./states_geojson/${stateFile}.geojson`)
-        .then(res => {
-            if (!res.ok) throw new Error("GeoJSON not found");
-            return res.json();
-        })
-        .then(data => {
-
-            // ---------------------
-            // MASK
-            // ---------------------
-            const mask = turf.mask(data);
-            L.geoJSON(mask, {
-                style: {
-                    fillColor: "#ffffff",
-                    fillOpacity: 1,
-                    color: "transparent",
-                    weight: 0
-                },
-                interactive: false
-            }).addTo(map);
-
-            // ---------------------
-            // STATE BORDER
-            // ---------------------
-            const layer = L.geoJSON(data, {
-                style: {
-                    fillColor: "#e67e22",
-                    color: "#d35400",
-                    weight: 3,
-                    fillOpacity: 0.2
-                }
-            }).addTo(map);
-
-            const bounds = layer.getBounds();
-            map.fitBounds(bounds, {padding: [20, 20]});
-            map.setMaxBounds(bounds);
-            map.setMinZoom(map.getZoom());
-
-// ==============================
-// LOAD & PARSE CSV PROPERLY
-// ==============================
-            fetch('india_stations.csv')
-                .then(res => res.text())
-                .then(csvText => {
-
-                    // Split lines safely
-                    const lines = csvText.split('\n').slice(1);
-
-                    let total = 0;
-                    let valid = 0;
-                    let inside = 0;
-
-                    lines.forEach(line => {
-
-                        if (!line.trim()) return;
-
-                        // ✅ BETTER SPLIT (handles commas inside names)
-                        const cols = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-
-                        if (!cols || cols.length < 5) return;
-
-                        total++;
-
-                        // ⚠️ Adjust indices if needed (based on your CSV)
-                        const locationName = cols[2]?.replace(/"/g, '');
-                        const lat = parseFloat(cols[3]);
-                        const lon = parseFloat(cols[4]);
-
-                        if (isNaN(lat) || isNaN(lon)) return;
-
-                        valid++;
-
-                        const point = turf.point([lon, lat]);
-
-                        // ✅ CORRECT STATE FILTER
-                        if (turf.booleanPointInPolygon(point, data.features[0])) {
-
-                            inside++;
-
-                            const icon = L.icon({
-                                iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                                iconSize: [28, 28],
-                                iconAnchor: [14, 28],
-                                popupAnchor: [0, -28]
-                            });
-
-                            L.marker([lat, lon], { icon })
-                                .bindPopup(`<strong>Station:</strong> ${locationName}`).on('click', (e) => {map.flyTo([lat, lon], 13, {
-                                animate: true,
-                                duration: 1.5 // Animation duration in seconds
-                            });})
-                                .addTo(map);
-
-
-                        }
-
-                    });
-
-                    // 🔍 DEBUG OUTPUT
-                    console.log("Total rows:", total);
-                    console.log("Valid coords:", valid);
-                    console.log("Inside state:", inside);
-                });
-
-        })
-        .catch(err => {
-            console.error("Error:", err);
-        });
-
     const coLabels = Array.from({length: 90}, (_, i) => i);
-
     const coData = Array.from({length: 90}, () => Math.random() * 10);
 
     new Chart(document.getElementById("co2TrendCanvas"), {
@@ -535,6 +392,62 @@
         window.history.back();
     }
 </script>
+<script>
+    // INIT MAP centered on India
+    const map = L.map('map', { attributionControl: false }).setView([22, 80], 5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png').addTo(map);
 
+
+
+    // LOAD NATIONAL GEOJSON
+    fetch('./india_states.geojson')
+        .then(res => {
+            if (!res.ok) throw new Error("GeoJSON not found");
+            return res.json();
+        })
+        .then(data => {
+
+            // ---------------------
+            // MASK
+            // ---------------------
+            const mask = turf.mask(data.features[0]);
+            L.geoJSON(mask, {
+                style: {
+                    fillColor: "#ffffff",
+                    fillOpacity: 1,
+                    color: "transparent",
+                    weight: 0
+                },
+                interactive: false
+            }).addTo(map);
+
+
+            const stateLayer = L.geoJSON(data, {
+                style: {
+                    fillColor: "#34495e",
+                    color: "#ffffff",
+                    weight: 1.5,
+                    fillOpacity: 0.5
+                },
+                onEachFeature: function (feature, layer) {
+                    const name = feature.properties.ST_NM; // Ensure ST_NM matches your GeoJSON key
+
+                    layer.on('mouseover', function() {
+                        this.setStyle({ fillOpacity: 0.8, fillColor: "#e67e22", weight: 3 });
+                    });
+                    layer.on('mouseout', function() { stateLayer.resetStyle(this); });
+
+                    // REDIRECT TO STATE PAGE
+                    layer.on('click', () => {
+                        window.location.href = `state.html?state=${encodeURIComponent(name)}`;
+                    });
+
+                    layer.bindTooltip(name, { sticky: true });
+                }
+            }).addTo(map);
+
+            map.fitBounds(stateLayer.getBounds());
+        });
+</script>
 </body>
 </html>
