@@ -1,0 +1,184 @@
+Station Name,City,State,AQI,Latitude,Longitude
+"GVM Corporation, Visakhapatnam, India",GVM Corporation,Andhra Pradesh,93,17.72,83.3
+"Secretariat, Amaravati, India",Secretariat,Andhra Pradesh,53,16.5150833,80.5181667
+"Tirumala-APPCB, Tirupati, India",Tirumala-APPCB,Andhra Pradesh,90,13.67,79.35
+"Railway Colony, Guwahati, India",Railway Colony,Assam,168,26.181742,91.78063
+"Buddha Colony, Muzaffarpur, India",Buddha Colony,Bihar,156,26.11442,85.39813
+"Chitragupta Nagar, Siwan, India",Chitragupta Nagar,Bihar,76,26.2271665,84.3570427
+"Dangi Tola, Rajgir, India",Dangi Tola,Bihar,70,25.0328,85.41948
+"Govt. High School Shikarpur, Patna, India",Govt. High School Shikarpur,Bihar,121,25.592539,85.227158
+"MIT-Daudpur Kothi, Muzaffarpur, India",MIT-Daudpur Kothi,Bihar,128,26.1403345,85.3650192
+"Muzaffarpur Collectorate, Muzaffarpur, India",Muzaffarpur Collectorate,Bihar,151,26.1209,85.3647
+"SFTI Kusdihra, Gaya, India",SFTI Kusdihra,Bihar,97,24.762518,84.982348
+"Samanpura, Patna, India",Samanpura,Bihar,151,25.596727,85.085624
+"Mandir Marg, Delhi, Delhi, India",Delhi,Delhi,155,28.6341,77.2005
+"GIFT City, Gandhinagar, India",GIFT City,Gujarat,100,23.163798,72.677768
+"Phase-1 GIDC, Vapi, India",Phase-1 GIDC,Gujarat,77,20.362421,72.918013
+"Phase-4 GIDC, Vatva, India",Phase-4 GIDC,Gujarat,152,22.969611,72.6435
+"SAC ISRO Satellite, Ahmedabad, India",SAC ISRO Satellite,Gujarat,126,23.023389,72.515201
+"Rajbagh, Srinagar, India",Rajbagh,Jammu & Kashmir,44,34.066206,74.81982
+"B.Katihalli, Hassan, India",B.Katihalli,Karnataka,-,13.008556,76.125258
+"BWSSB Kadabesanahalli, Bengaluru, India",BWSSB Kadabesanahalli,Karnataka,-,12.9352049,77.6814488
+"Collector Office, Yadgir, India",Collector Office,Karnataka,119,16.7602,77.1428
+"Hebbal 1st Stage, Mysuru, India",Hebbal 1st Stage,Karnataka,52,12.21041,76.37376
+"Jayanagar 5th Block, Bengaluru, India",Jayanagar 5th Block,Karnataka,118,12.920984,77.584908
+"Borivali East, Mumbai, India",Borivali East,Maharashtra,99,19.23241,72.86895
+"Gangapur Road, Nashik, India",Gangapur Road,Maharashtra,41,20.0073285,73.7762427
+"Khadakpada, Kalyan, India",Khadakpada,Maharashtra,54,19.25292,73.142019
+"Kurla, Mumbai, India",Kurla,Maharashtra,129,19.0863,72.8888
+"Navy Nagar-Colaba, Mumbai, India",Navy Nagar-Colaba,Maharashtra,119,18.897756,72.81332
+"Opp GPO Civil Lines, Nagpur, India",Opp GPO Civil Lines,Maharashtra,96,21.152875,79.0517531
+"Powai, Mumbai, India",Powai,Maharashtra,68,19.1375,72.915056
+"JN Stadium, Shillong, India",JN Stadium,Meghalaya,84,25.5803419,91.8942571
+"Sikulpuikawn, Aizawl, India",Sikulpuikawn,Mizoram,82,23.7176342,92.7192841
+"PWD Juction, Kohima, India",PWD Juction,Nagaland,-,25.6635413,94.0989878
+"Anand Kala Kshetram, Rajamahendravaram, India",Anand Kala Kshetram,Other/India,53,16.9872867,81.7363176
+"Anand Vihar, Hapur, India",Anand Vihar,Other/India,75,28.725645,77.749675
+"Anthoni Pillai Nagar, Gummidipoondi, India",Anthoni Pillai Nagar,Other/India,68,13.4127,80.1081
+"Arya Nagar, Bahadurgarh, India",Arya Nagar,Other/India,344,28.6701,76.9254
+"Bakuo street, Lhasa (拉萨八廓街)",Bakuo street,Other/India,47,29.6514,91.1319
+"Bandhavgar Colony, Satna, India",Bandhavgar Colony,Other/India,88,24.58434363,80.8549414
+"Bhopal Chauraha, Dewas, India",Bhopal Chauraha,Other/India,87,22.9682591,76.064118
+"Brahmagiri, Udupi, India",Brahmagiri,Other/India,36,13.34194444,74.74694444
+"Central Jail, Buxar, India",Central Jail,Other/India,78,25.555605,83.950942
+"Chandrapur, Chandrapur, India",Chandrapur,Other/India,92,19.645324,77.6345232
+"Chhoti Gwaltoli, Indore, India",Chhoti Gwaltoli,Other/India,85,22.431,75.5213
+"Chikkaballapur Rural, Chikkaballapur, India",Chikkaballapur Rural,Other/India,85,13.428828,77.731418
+"City Center, Gwalior, India",City Center,Other/India,53,26.203442,78.193251
+"Civic Center, Bhilai, India",Civic Center,Other/India,28,21.185571,81.343175
+"Civil Line, Jalandhar, India",Civil Line,Other/India,98,31.321907,75.578914
+"Corporation Ground, Thrissur, India",Corporation Ground,Other/India,93,10.5324,76.2159
+"D M Colony, Bihar Sharif, India",D M Colony,Other/India,57,25.204762,85.51496
+"DM Office_Kasipur, Samastipur, India",DM Office_Kasipur,Other/India,72,25.859655,85.77944
+"DRCC Anandpur, Begusarai, India",DRCC Anandpur,Other/India,91,25.444266,86.140169
+"Dada Peer, Sasaram, India",Dada Peer,Other/India,40,24.952822,84.002396
+"Darshan Nagar, Chhapra, India",Darshan Nagar,Other/India,9,25.7808257,84.7446768
+"Deen Dayal Nagar, Sagar, India",Deen Dayal Nagar,Other/India,55,23.8640158,78.80289321
+"Diwator Nagar, Koppal, India",Diwator Nagar,Other/India,661,15.34763,76.181767
+"Doon University, Dehradun, India",Doon University,Other/India,117,30.269444,78.044167
+"Employment Office, Moradabad, India",Employment Office,Other/India,92,28.88528,78.7388
+"F-Block, Sirsa, India",F-Block,Other/India,78,29.5364,75.0158
+"Forest Rest House, Manguraha, India",Forest Rest House,Other/India,124,25.357288,84.107844
+"GIDC, Ankleshwar, India",GIDC,Other/India,91,21.613267,73.010555
+"GIDC, Nandesari, India",GIDC,Other/India,87,22.410802,73.097923
+"GM Office, Brajrajnagar, India",GM Office,Other/India,32,21.8004996,83.8396977
+"Gandak Colony, Motihari, India",Gandak Colony,Other/India,70,26.63086,84.90051
+"General Hospital, Mandikhera, India",General Hospital,Other/India,82,27.9002,76.9938
+"Girls College, Sivasagar, India",Girls College,Other/India,59,26.987634,94.636574
+"Gobind Pura, Yamuna Nagar, India",Gobind Pura,Other/India,131,30.1480566,77.2893471
+"Golden Temple, Amritsar, India",Golden Temple,Other/India,103,31.62,74.876512
+"Gole Bazar, Katni, India",Gole Bazar,Other/India,74,23.50016,80.23284
+"Gulzarpet, Anantapur, India",Gulzarpet,Other/India,114,14.675886,77.593027
+"Gurdeo Nagar, Aurangabad, India",Gurdeo Nagar,Other/India,57,24.75746,84.366208
+"H.B. Colony, Bhiwani, India",H.B. Colony,Other/India,144,28.806223,76.141105
+"HIMUDA Complex Phase-1, Baddi, India",HIMUDA Complex Phase-1,Other/India,155,30.943887,76.801991
+"Haji Colony, Raichur, India",Haji Colony,Other/India,-,16.208139,77.348417
+"Hardev Nagar, Bathinda, India",Hardev Nagar,Other/India,75,30.233011,74.907758
+"Huda Sector, Fatehabad, India",Huda Sector,Other/India,55,29.503664,75.467934
+"Ibrahimpur, Vijayapura, India",Ibrahimpur,Other/India,63,16.802639,75.722694
+"Indira Colony Vistar, Pali, India",Indira Colony Vistar,Other/India,152,25.771061,73.340227
+"Industrial Area, Hajipur, India",Industrial Area,Other/India,150,25.697189,85.2459
+"Jawahar Nagar, Puducherry, India",Jawahar Nagar,Other/India,21,11.9309,79.8027
+"Jhunsi, Prayagraj, India",Jhunsi,Other/India,60,25.425602,81.917152
+"Jigar Colony, Moradabad, India",Jigar Colony,Other/India,71,28.856664,78.772638
+"Kadri, Mangalore, India",Kadri,Other/India,76,12.88925,74.853
+"Kalindi Kunj, Khurja, India",Kalindi Kunj,Other/India,13,28.2348927,77.8683002
+"Kalyana Nagara, Chikkamagaluru, India",Kalyana Nagara,Other/India,-,13.328028,75.797056
+"Kamalnath Nagar, Bettiah, India",Kamalnath Nagar,Other/India,9,26.80365,84.51954
+"Kariavattom, Thiruvananthapuram, India",Kariavattom,Other/India,99,8.5637,76.8865
+"Kharahiya Basti, Araria, India",Kharahiya Basti,Other/India,158,26.146529,87.454184
+"Knowledge Park - V, Greater Noida, India",Knowledge Park - V,Other/India,155,28.557054,77.453663
+"Lhasa Railway Station, Lhasa (拉萨拉萨火车站)",Lhasa Railway Station,Other/India,82,29.6292,91.0834
+"MIDC Khutala, Chandrapur, India",MIDC Khutala,Other/India,134,19.9775302,79.2337086
+"Madan Mohan Malaviya University of Technology, Gorakhpur, India",Madan Mohan Malaviya University of Technology,Other/India,88,26.730136,83.433859
+"Mangala, Bilaspur, India",Mangala,Other/India,66,22.08815,82.13737
+"Marhatal, Jabalpur, India",Marhatal,Other/India,82,23.168606,79.932247
+"Mariam Nagar, Purnia, India",Mariam Nagar,Other/India,114,25.366336,87.117468
+"Meelavittan, Thoothukudi, India",Meelavittan,Other/India,50,8.816428,78.099039
+"Mendonsa Colony, Dindigul, India",Mendonsa Colony,Other/India,17,10.358535,77.984321
+"Mini Secretariat, Charkhi Dadri, India",Mini Secretariat,Other/India,96,28.593883,76.270653
+"Mirchaibari, Katihar, India",Mirchaibari,Other/India,66,25.560083,87.553265
+"Model Town, Patiala, India",Model Town,Other/India,59,30.349388,76.366642
+"Moti Doongri, Alwar, India",Moti Doongri,Other/India,121,27.554793,76.611536
+"Municipal Corporation Office, Dharuhera, India",Municipal Corporation Office,Other/India,85,28.2068,76.7997
+"Murthal, Sonipat, India",Murthal,Other/India,110,29.0272,77.0621
+"Nagar Nigam, Prayagraj, India",Nagar Nigam,Other/India,53,25.44919916,81.82735986
+"Nagqu Stations, Nagqu (那曲地区那曲监测站)",Nagqu Stations,Other/India,57,31.4846,92.0657
+"Naharlagun, Naharlagun, India",Naharlagun,Other/India,98,27.103358,93.679645
+"Nathu Colony, Ballabgarh, India",Nathu Colony,Other/India,169,28.3419248,77.319699
+"New DM Office, Arrah, India",New DM Office,Other/India,53,25.5626095,84.663264
+"New Mandi, Muzaffarnagar, India",New Mandi,Other/India,92,29.4723508,77.7194031
+"Ngari Station, Ngari Sanai (阿里地区阿里监测站)",Ngari Station,Other/India,47,32.5,80.1161
+"Omex Eternity, Vrindavan, India",Omex Eternity,Other/India,32,27.571409,77.655757
+"Paryavaran Parisar, Bhopal, India",Paryavaran Parisar,Other/India,154,23.210494,77.425409
+"Patti Mehar, Ambala, India",Patti Mehar,Other/India,110,30.379589,76.778328
+"Polayathode, Kollam, India",Polayathode,Other/India,82,8.8787,76.6073
+"Police Line, Saharsa, India",Police Line,Other/India,30,25.892357,86.590325
+"Police Lines, Jind, India",Police Lines,Other/India,73,29.307814,76.337619
+"Punjab Agricultural University, Ludhiana, India",Punjab Agricultural University,Other/India,101,30.9028,75.8086
+"RIMT University, Mandi Gobindgarh, India",RIMT University,Other/India,147,30.649961,76.331442
+"Ramteerth Nagar, Belgaum, India",Ramteerth Nagar,Other/India,-,15.888653,74.541751
+"Ratanpura, Rupnagar, India",Ratanpura,Other/India,65,31.0325454,76.5623046
+"Rishi Nagar, Kaithal, India",Rishi Nagar,Other/India,84,29.8006,76.4155
+"SDM Office_Khagra, Kishanganj, India",SDM Office_Khagra,Other/India,91,26.0881305,87.93840336
+"Sahilara, Maihar, India",Sahilara,Other/India,82,24.2613009,80.7231783
+"Sardar Patel Inter College, Baghpat, India",Sardar Patel Inter College,Other/India,57,28.964949,77.278761
+"Sector 30, Faridabad, India",Sector 30,Other/India,157,28.4417,77.3217
+"Sector 6 Panchkula, Panchkula, India",Sector 6 Panchkula,Other/India,111,30.7057778,76.8531805555555
+"Sector-12, Karnal, India",Sector-12,Other/India,69,29.6953,77.0027
+"Sector-18, Panipat, India",Sector-18,Other/India,-,29.497973,76.993331
+"Sector-2 IMT, Manesar, India",Sector-2 IMT,Other/India,63,28.360699,76.93609
+"Sector-2 Industrial Area, Pithampur, India",Sector-2 Industrial Area,Other/India,102,22.624758,75.675238
+"Sector-7, Kurukshetra, India",Sector-7,Other/India,101,29.966942,76.875879
+"Sector-D Industrial Area, Mandideep, India",Sector-D Industrial Area,Other/India,151,23.10844,77.511428
+"Shasthri Nagar, Ratlam, India",Shasthri Nagar,Other/India,64,23.331731,75.045981
+"Shastri Nagar, Narnaul, India",Shastri Nagar,Other/India,99,28.060249,76.113115
+"Shivaji Nagar, Jhansi, India",Shivaji Nagar,Other/India,50,25.4547,78.6039
+"Shrinath Puram, Kota, India",Shrinath Puram,Other/India,118,25.14389,75.821256
+"Shrivastav Colony, Damoh, India",Shrivastav Colony,Other/India,63,23.81748678,79.446246
+"Sidhu Kanhu Indoor Stadium, Durgapur, India",Sidhu Kanhu Indoor Stadium,Other/India,78,23.5404352,87.2892225
+"Stuart Hill, Madikeri, India",Stuart Hill,Other/India,52,12.415911,75.73505
+"Talcher Coalfields, Talcher, India",Talcher Coalfields,Other/India,108,20.9360711,85.1707021
+"Tata Stadium, Jorapokhar, India",Tata Stadium,Other/India,87,23.707909,86.41467
+"Thavakkara, Kannur, India",Thavakkara,Other/India,156,11.875,75.3732
+"Town Hall, Munger, India",Town Hall,Other/India,68,25.376776,86.471523
+"Udyogamandal, Eloor, India",Udyogamandal,Other/India,-,10.073232,76.302765
+"Urban, Chamarajanagar, India",Urban,Other/India,63,11.55358,76.55521
+"Urban Estate-II, Hisar, India",Urban Estate-II,Other/India,61,29.14056,75.744941
+"Vibhab Nagar, Firozabad, India",Vibhab Nagar,Other/India,69,27.1594,78.3953
+"Vidayagiri, Bagalkot, India",Vidayagiri,Other/India,69,16.172806,75.659694
+"Vijay Nagar, Ramanagara, India",Vijay Nagar,Other/India,81,12.733409,77.298051
+"Vikas Sadan Gurgaon, Gurgaon, India",Vikas Sadan Gurgaon,Other/India,159,28.4501238,77.0263051
+"Vindhyachal STPS, Singrauli, India",Vindhyachal STPS,Other/India,103,24.10897,82.64558
+"Vinoba Nagara, Shivamogga, India",Vinoba Nagara,Other/India,58,13.94,75.555917
+"More Chowk, Waluj, Aurangabad, India",Waluj,Other/India,74,19.8389439,75.244448
+"Ward-32 Bapupara, Siliguri, India",Ward-32 Bapupara,Other/India,92,26.6883049,88.412668
+"Yamunapuram, Bulandshahr, India",Yamunapuram,Other/India,68,28.406963,77.849831
+"Ashok Nagar, Udaipur, India",Ashok Nagar,Rajasthan,104,24.5886166,73.6321397
+"Civil Lines, Ajmer, India",Civil Lines,Rajasthan,95,26.470859,74.646594
+"Collectorate, Jodhpur, India",Collectorate,Rajasthan,80,26.268249,73.0193853
+"Police Commissionerate, Jaipur, India",Police Commissionerate,Rajasthan,151,26.9164092,75.7994901
+"Zero Point GICI, Gangtok, India",Zero Point GICI,Sikkim,85,27.33853,88.614099
+"Manali, Chennai, Chennai, India",Chennai,Tamil Nadu,99,13.164544,80.26285
+"Perungudi, Chennai, Chennai, India",Chennai,Tamil Nadu,72,12.9533,80.2357
+"SIDCO Kurichi, Coimbatore, India",SIDCO Kurichi,Tamil Nadu,59,10.942451,76.978996
+"IITH Kandi, Hyderabad, India",IITH Kandi,Telangana,153,17.585705,78.126199
+"New Malakpet, Hyderabad, India",New Malakpet,Telangana,155,17.37206,78.50864
+"Somajiguda, Hyderabad, India",Somajiguda,Telangana,124,17.417094,78.457437
+"Bardowali, Agartala, India",Bardowali,Tripura,140,23.8175497,91.2726974
+"Ardhali Bazar, Varanasi, India",Ardhali Bazar,Uttar Pradesh,94,25.3505986,82.9083074
+"Central School, Lucknow, India",Central School,Uttar Pradesh,162,26.8821003,80.9302753
+"Civil Lines, Bareilly, India",Civil Lines,Uttar Pradesh,65,28.359581,79.414455
+"Nehru Nagar, Kanpur, India",Nehru Nagar,Uttar Pradesh,64,26.4703136,80.3229863
+"Pallavpuram Phase 2, Meerut, India",Pallavpuram Phase 2,Uttar Pradesh,146,29.06351,77.709723
+"Rajendra Nagar, Bareilly, India",Rajendra Nagar,Uttar Pradesh,38,28.38910936,79.42963708
+"Rohta, Agra, India",Rohta,Uttar Pradesh,61,27.106972,78.000111
+"Sanjay Nagar, Ghaziabad, India",Sanjay Nagar,Uttar Pradesh,88,28.685382,77.453839
+"Sector-3B Avas Vikas Colony, Agra, India",Sector-3B Avas Vikas Colony,Uttar Pradesh,101,27.19412,77.96237
+"Talkatora, Lucknow, India",Talkatora,Uttar Pradesh,89,26.83399722,80.8917361
+"Asansol Court Area, Asansol, India",Asansol Court Area,West Bengal,144,23.685297,86.945968
+"Belur Math, Howrah, India",Belur Math,West Bengal,136,22.629801,88.352017
+"Bidhannagar, Kolkata, India",Bidhannagar,West Bengal,101,22.58157048,88.41002457
+"Ghusuri, Howrah, India",Ghusuri,West Bengal,161,22.611968,88.347422
+"Haldia, Haldia, India",Haldia,West Bengal,128,22.06047,88.109737
+"Rabindra Bharati University, Kolkata, India",Rabindra Bharati University,West Bengal,143,22.627847,88.380669

@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Air Quality Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .container {
+            padding: 25px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        /* --- GRID LAYOUT --- */
+        /* GRID LAYOUT */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 24px;
+            grid-template-areas:
+                "map metrics"
+                "map pollutants"
+                "co2-trend co2-trend"
+                "extra extra"
+                "pm25 pm25"
+                "pm10 pm10";
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0 20px 0;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .card h3 {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+
+        /* Assigning areas to specific divs */
+        .map-section {
+            grid-area: map;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            flex-grow: 1;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metrics-section {
+            grid-area: metrics;
+        }
+
+        .kpi-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .kpi {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+        }
+
+        .kpi-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .aqi-badge {
+            background: var(--warning);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 24px;
+        }
+
+
+        .pollutants-section {
+            grid-area: pollutants;
+        }
+
+        #pollutantCharts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .pollutant-card {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .co2-section {
+            grid-area: co2-trend;
+        }
+
+        #co2TrendCanvas {
+            height: 250px !important;
+        }
+
+        .extra-section {
+            grid-area: extra-row;
+            min-height: 100px;
+        }
+
+
+        /* Chart Heights */
+        .chart-box {
+            height: 60px;
+            width: 100%;
+        }
+
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas: "metrics" "map" "pollutants" "co2-trend";
+            }
+        }
+
+        .main {
+            display: flex;
+            gap: 25px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .aqi {
+            color: var(--accent);
+        }
+
+        .chart-container {
+            height: 500px;
+            width: 100%;
+            position: relative;
+        }
+
+
+        .back-btn {
+            margin-top: 15px;
+            padding: 12px;
+            border: none;
+            background: #edf2f7;
+            color: #4a5568;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .back-btn:hover {
+            background: #e2e8f0;
+        }
+
+        #coTrend {
+            height: 200px !important;
+            width: 100% !important;
+        }
+
+        .o3-section {
+            grid-area: extra;
+            height: 500px;   /* 🔥 THIS FIXES STRETCHING */
+        }
+
+        .o3-section canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+        .pm10-section {
+            grid-area: pm10;
+            height: 500px;   /* 🔥 THIS FIXES STRETCHING */
+        }
+
+        .pm10-section canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+        .pm25-section {
+            grid-area: pm25;
+            height: 500px;   /* 🔥 THIS FIXES STRETCHING */
+        }
+
+        .pm25-section canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="title" id="stateTitle" style="font-size: 24px; font-weight: 800;">Loading State Data...</div>
+    </div>
+
+
+    <div class="dashboard-grid">
+        <div class="card map-section">
+            <div id="map"></div>
+            <a href="india.html" style="margin-top:10px; border:none; padding:10px; cursor:pointer; border-radius:8px;">
+            <button >← Back to
+                National View
+            </button>
+                </a>
+        </div>
+
+        <div class="card metrics-section">
+            <h3 style="margin-top:0">Live Air Metrics</h3>
+            <div class="kpi-container">
+                <div class="kpi">
+                    <div class="kpi-title">PM 2.5</div>
+                    <div class="kpi-value">132</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">Avg. PM</div>
+                    <div class="kpi-value">162</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">AQI</div>
+                    <div class="kpi-value" style="color:orange">188</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card pollutants-section">
+            <h3 style="margin-top:0">Pollutants Daily</h3>
+            <div id="pollutantCharts">
+            </div>
+        </div>
+        <div class="card o3-section" height="250">
+            <h3>O3 Trend</h3>
+            <canvas id="o3Chart"></canvas>
+        </div>
+
+        <div class="card pm10-section" height="250">
+            <h3>PM10 Trend</h3>
+            <canvas id="pm10Chart"></canvas>
+        </div>
+
+        <div class="card pm25-section" height="250">
+            <h3>PM 2.5 Trend</h3>
+            <canvas id="pm25Chart"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+
+<style>
+    .pollutant-chart {
+        margin-bottom: 15px;
+    }
+
+    .pollutant-label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .chart-box {
+        height: 80px;
+        width: 100%;
+    }
+</style>
+<script>
+    // =========================
+    // CONFIG
+    // =========================
+    const params = new URLSearchParams(window.location.search);
+    let stateName = params.get("state") || "Maharashtra";
+
+    const stateFile = stateName.toLowerCase().replace(/\s+/g, '');
+
+    document.getElementById("stateTitle").innerText = "Analysis: " + stateName;
+
+    // =========================
+    // INIT MAP
+    // =========================
+    const map = L.map('map', {
+        zoomControl: true,
+        attributionControl: false
+    }).setView([22, 80], 5);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png').addTo(map);
+
+
+    // --- Data Generators ---
+    const genLabels = (count) => Array.from({length: count}, (_, i) => `${i}:00`);
+    const genData = (count, max) => Array.from({length: count}, () => Math.floor(Math.random() * max));
+
+    // --- Pollutant Charts ---
+    const pollutants = [
+        {id: "pm25", name: "PM 2.5", max: 200, color: '#3b82f6'},
+        {id: "pm10", name: "PM 10", max: 250, color: '#10b981'},
+        {id: "no2", name: "NO₂", max: 100, color: '#f59e0b'},
+        {id: "so2", name: "SO₂", max: 80, color: '#ef4444'}
+    ];
+
+    const pollContainer = document.getElementById('pollutantCharts');
+    pollutants.forEach(p => {
+        pollContainer.innerHTML += `
+            <div class="pollutant-card">
+                <div style="font-size:12px; font-weight:700; margin-bottom:5px;">${p.name}</div>
+                <div style="height:60px;"><canvas id="chart_${p.id}"></canvas></div>
+            </div>
+        `;
+    });
+
+    // STEP 2: create charts AFTER DOM is ready
+    // Wait for DOM to initialize charts
+    setTimeout(() => {
+        pollutants.forEach(p => {
+            new Chart(document.getElementById(`chart_${p.id}`), {
+                type: 'bar',
+                data: {
+                    labels: genLabels(24),
+                    datasets: [{data: genData(24, p.max), backgroundColor: p.color, borderRadius: 4}]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {legend: {display: false}},
+                    scales: {x: {display: false}, y: {display: false}}
+                }
+            });
+        });
+
+        // --- CO2 Line Chart ---
+        const co2Ctx = document.getElementById('co2TrendCanvas').getContext('2d');
+        const gradient = co2Ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+        new Chart(co2Ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 90}, (_, i) => `Day ${i}`),
+                datasets: [{
+                    label: 'CO2 Level',
+                    data: genData(90, 500),
+                    borderColor: '#10b981',
+                    borderWidth: 3,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {legend: {display: false}},
+                scales: {
+                    y: {grid: {borderDash: [5, 5]}, ticks: {color: '#94a3b8'}},
+                    x: {ticks: {color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10}}
+                }
+            }
+        });
+    }, 100);
+
+
+
+
+
+    // =========================
+    // LOAD GEOJSON + HEATMAP
+    // =========================
+    fetch(`./states_geojson/${stateFile}.geojson`)
+        .then(res => {
+            if (!res.ok) throw new Error("GeoJSON not found");
+            return res.json();
+        })
+        .then(data => {
+
+            // ---------------------
+            // MASK
+            // ---------------------
+            const mask = turf.mask(data);
+            L.geoJSON(mask, {
+                style: {
+                    fillColor: "#ffffff",
+                    fillOpacity: 1,
+                    color: "transparent",
+                    weight: 0
+                },
+                interactive: false
+            }).addTo(map);
+
+            // ---------------------
+            // STATE BORDER
+            // ---------------------
+            const layer = L.geoJSON(data, {
+                style: {
+                    fillColor: "#e67e22",
+                    color: "#d35400",
+                    weight: 3,
+                    fillOpacity: 0.2
+                }
+            }).addTo(map);
+
+            const bounds = layer.getBounds();
+            map.fitBounds(bounds, {padding: [20, 20]});
+            map.setMaxBounds(bounds);
+            map.setMinZoom(map.getZoom());
+
+// ==============================
+// LOAD & PARSE CSV PROPERLY
+// ==============================
+            fetch('india_stations.csv')
+                .then(res => res.text())
+                .then(csvText => {
+
+                    // Split lines safely
+                    const lines = csvText.split('\n').slice(1);
+
+                    let total = 0;
+                    let valid = 0;
+                    let inside = 0;
+
+                    lines.forEach(line => {
+
+                        if (!line.trim()) return;
+
+                        // ✅ BETTER SPLIT (handles commas inside names)
+                        const cols = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+
+                        if (!cols || cols.length < 5) return;
+
+                        total++;
+
+                        // ⚠️ Adjust indices if needed (based on your CSV)
+                        const locationName = cols[2]?.replace(/"/g, '');
+                        const locationId = cols[1]?.replace(/"/g, '');
+                        const lat = parseFloat(cols[3]);
+                        const lon = parseFloat(cols[4]);
+
+                        if (isNaN(lat) || isNaN(lon)) return;
+
+                        valid++;
+
+                        const point = turf.point([lon, lat]);
+
+                        // ✅ CORRECT STATE FILTER
+                        if (turf.booleanPointInPolygon(point, data.features[0])) {
+
+                            inside++;
+
+                            const icon = L.icon({
+                                iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                                iconSize: [28, 28],
+                                iconAnchor: [14, 28],
+                                popupAnchor: [0, -28]
+                            });
+
+                            L.marker([lat, lon], { icon })
+                                .bindPopup(`<strong>Station:</strong> ${locationName}`)
+                                .on('click', (e) => {map.flyTo([lat, lon], 13, {
+                                animate: true,
+                                duration: 1.5,// Animation duration in seconds
+
+                                });
+                                updateStationGraph(locationId, locationName);
+                                }).addTo(map);
+
+
+                        }
+
+                    });
+
+                    // 🔍 DEBUG OUTPUT
+                    console.log("Total rows:", total);
+                    console.log("Valid coords:", valid);
+                    console.log("Inside state:", inside);
+                });
+
+        })
+        .catch(err => {
+            console.error("Error:", err);
+        });
+
+    const coLabels = Array.from({length: 90}, (_, i) => i);
+
+    const coData = Array.from({length: 90}, () => Math.random() * 10);
+
+    new Chart(document.getElementById("co2TrendCanvas"), {
+        type: "line",
+        data: {
+            labels: coLabels,
+            datasets: [{
+                data: coData,
+                borderColor: "#1abc9c",
+                backgroundColor: "rgba(26,188,156,0.2)",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {display: false},
+                y: {display: false}
+            }
+        }
+    });
+
+
+
+    // =========================
+    // NAV
+    // =========================
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+<!--O3 Script-->
+<script>
+
+    // =============================
+    // FILE PATHS
+    // =============================
+    const CSV_PATH = 'o3_india_daily.csv';
+    const STATIONS_FILE = "india_stations.csv";
+    const STATE_FILE = `./states_geojson/${stateFile}.geojson`; // change state
+
+
+    // =============================
+    // LOAD EVERYTHING
+    // =============================
+    Promise.all([
+        fetch(STATIONS_FILE).then(res => res.text()),
+        fetch(CSV_PATH).then(res => res.text()),
+        fetch(STATE_FILE).then(res => res.json())
+    ]).then(([stationsCSV, pollutantCSV, stateGeo]) => {
+
+        const stations = Papa.parse(stationsCSV, { header: true }).data;
+        const pollutant = Papa.parse(pollutantCSV, { header: true }).data;
+
+        const statePolygon = stateGeo.features[0];
+
+        // -----------------------------
+        // FILTER STATIONS IN STATE
+        // -----------------------------
+        const stationsInState = stations.filter(s => {
+
+            const lat = parseFloat(s.lat);
+            const lon = parseFloat(s.lon);
+
+            if (isNaN(lat) || isNaN(lon)) return false;
+
+            const point = turf.point([lon, lat]);
+
+            return turf.booleanPointInPolygon(point, statePolygon);
+        });
+
+        console.log("Stations in state:", stationsInState.length);
+
+        // -----------------------------
+        // GET STATION IDS
+        // -----------------------------
+        const stationIds = stationsInState.map(s => s.id.toString());
+
+        // -----------------------------
+        // PROCESS POLLUTANT DATA
+        // -----------------------------
+        let labels = [];
+        let avgData = [];
+        let maxData = [];
+        let minData = [];
+
+        pollutant.forEach(row => {
+
+            const datetime = row["datetime"];
+            if (!datetime) return;
+
+            let values = [];
+
+            stationIds.forEach(id => {
+                const val = parseFloat(row[id]);
+
+                if (!isNaN(val) && val > 5 && val < 300) {
+                    values.push(val);
+                }
+            });
+
+            if (values.length === 0) return;
+
+            const date = datetime.split("T")[0].split(" ")[0];
+
+            const sum = values.reduce((a, b) => a + b, 0);
+
+            labels.push(date);
+            avgData.push(sum / values.length);
+            maxData.push(Math.max(...values));
+            minData.push(Math.min(...values));
+        });
+
+        console.log("Days:", labels.length);
+
+        // -----------------------------
+        // OUTPUT (for chart)
+        // -----------------------------
+        console.log({
+            labels,
+            avgData,
+            maxData,
+            minData
+        });
+
+        // 👉 call your chart function here
+        drawChart(labels, avgData, maxData, minData);
+    });
+
+
+    // =============================
+    // DRAW CHART
+    // =============================
+    function drawChart(labels, avg, max, min) {
+
+        if (window.o3ChartInstance) {
+            window.o3ChartInstance.destroy();
+        }
+
+        window.o3ChartInstance = new Chart(
+            document.getElementById("o3Chart"),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Average (India)",
+                            data: avg,
+                            backgroundColor: "#2ecc71", // Solid Green
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Max (Worst Location)",
+                            data: max,
+                            backgroundColor: "#e74c3c", // Solid Red
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Min (Best Location)",
+                            data: min,
+                            backgroundColor: "#3498db", // Solid Blue
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,   // no ctrl needed
+                            },
+                            zoom: {
+
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+</script>
+
+<!--PM10 Script-->
+<script>
+    // =============================
+    // CONFIG
+    // =============================
+    const PM10_CSV_PATH = 'pm10_india_daily.csv';
+
+
+    // =============================
+    // LOAD EVERYTHING
+    // =============================
+    Promise.all([
+        fetch(STATIONS_FILE).then(res => res.text()),
+        fetch(PM10_CSV_PATH).then(res => res.text()),
+        fetch(STATE_FILE).then(res => res.json())
+    ]).then(([stationsCSV, pollutantCSV, stateGeo]) => {
+
+        const stations = Papa.parse(stationsCSV, { header: true }).data;
+        const pollutant = Papa.parse(pollutantCSV, { header: true }).data;
+
+        const statePolygon = stateGeo.features[0];
+
+        // -----------------------------
+        // FILTER STATIONS IN STATE
+        // -----------------------------
+        const stationsInState = stations.filter(s => {
+
+            const lat = parseFloat(s.lat);
+            const lon = parseFloat(s.lon);
+
+            if (isNaN(lat) || isNaN(lon)) return false;
+
+            const point = turf.point([lon, lat]);
+
+            return turf.booleanPointInPolygon(point, statePolygon);
+        });
+
+        console.log("Stations in state:", stationsInState.length);
+
+        // -----------------------------
+        // GET STATION IDS
+        // -----------------------------
+        const stationIds = stationsInState.map(s => s.id.toString());
+
+        // -----------------------------
+        // PROCESS POLLUTANT DATA
+        // -----------------------------
+        let labels = [];
+        let avgData = [];
+        let maxData = [];
+        let minData = [];
+
+        pollutant.forEach(row => {
+
+            const datetime = row["datetime"] ? row["datetime"].split(/T| /)[0] : null;
+            if (!datetime) return;
+
+            let values = [];
+
+            stationIds.forEach(id => {
+                const val = parseFloat(row[id]);
+
+                if (!isNaN(val) && val > 5 && val < 300) {
+                    values.push(val);
+                }
+            });
+
+            if (values.length === 0) return;
+
+            const date = datetime.split("T")[0].split(" ")[0];
+
+            const sum = values.reduce((a, b) => a + b, 0);
+
+            labels.push(date);
+            avgData.push(sum / values.length);
+            maxData.push(Math.max(...values));
+            minData.push(Math.min(...values));
+        });
+
+        console.log("Days:", labels.length);
+
+        // -----------------------------
+        // OUTPUT (for chart)
+        // -----------------------------
+        console.log({
+            labels,
+            avgData,
+            maxData,
+            minData
+        });
+
+        // 👉 call your chart function here
+        drawPM10Chart(labels, avgData, maxData, minData);
+    });
+
+
+
+    // =============================
+    // DRAW CHART
+    // =============================
+    function drawPM10Chart(labels, avg, max, min) {
+
+        if (window.pm10ChartInstance) {
+            window.pm10ChartInstance.destroy();
+        }
+
+        window.pm10ChartInstance = new Chart(
+            document.getElementById("pm10Chart"),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Average (India)",
+                            data: avg,
+                            backgroundColor: "#2ecc71", // Solid Green
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Max (Worst Location)",
+                            data: max,
+                            backgroundColor: "#e74c3c", // Solid Red
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Min (Best Location)",
+                            data: min,
+                            backgroundColor: "#3498db", // Solid Blue
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,   // no ctrl needed
+                            },
+                            zoom: {
+
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+</script>
+
+<!--PM2.5 Script-->
+<script>
+    // =============================
+    // CONFIG
+    // =============================
+    const PM25_CSV_PATH = 'pm25_india_daily.csv';
+    // =============================
+    // LOAD EVERYTHING
+    // =============================
+    Promise.all([
+        fetch(STATIONS_FILE).then(res => res.text()),
+        fetch(PM10_CSV_PATH).then(res => res.text()),
+        fetch(STATE_FILE).then(res => res.json())
+    ]).then(([stationsCSV, pollutantCSV, stateGeo]) => {
+
+        const stations = Papa.parse(stationsCSV, { header: true }).data;
+        const pollutant = Papa.parse(pollutantCSV, { header: true }).data;
+
+        const statePolygon = stateGeo.features[0];
+
+        // -----------------------------
+        // FILTER STATIONS IN STATE
+        // -----------------------------
+        const stationsInState = stations.filter(s => {
+
+            const lat = parseFloat(s.lat);
+            const lon = parseFloat(s.lon);
+
+            if (isNaN(lat) || isNaN(lon)) return false;
+
+            const point = turf.point([lon, lat]);
+
+            return turf.booleanPointInPolygon(point, statePolygon);
+        });
+
+        console.log("Stations in state:", stationsInState.length);
+
+        // -----------------------------
+        // GET STATION IDS
+        // -----------------------------
+        const stationIds = stationsInState.map(s => s.id.toString());
+
+        // -----------------------------
+        // PROCESS POLLUTANT DATA
+        // -----------------------------
+        let labels = [];
+        let avgData = [];
+        let maxData = [];
+        let minData = [];
+
+        pollutant.forEach(row => {
+
+            const datetime = row["datetime"];
+            if (!datetime) return;
+
+            let values = [];
+
+            stationIds.forEach(id => {
+                const val = parseFloat(row[id]);
+
+                if (!isNaN(val) && val > 5 && val < 300) {
+                    values.push(val);
+                }
+            });
+
+            if (values.length === 0) return;
+
+            const date = datetime.split("T")[0].split(" ")[0];
+
+            const sum = values.reduce((a, b) => a + b, 0);
+
+            labels.push(date);
+            avgData.push(sum / values.length);
+            maxData.push(Math.max(...values));
+            minData.push(Math.min(...values));
+        });
+
+        console.log("Days:", labels.length);
+
+        // -----------------------------
+        // OUTPUT (for chart)
+        // -----------------------------
+        console.log({
+            labels,
+            avgData,
+            maxData,
+            minData
+        });
+
+        // 👉 call your chart function here
+        drawPM25Chart(labels, avgData, maxData, minData);
+    });
+
+
+
+    // =============================
+    // DRAW CHART
+    // =============================
+    function drawPM25Chart(labels, avg, max, min) {
+
+        if (window.pm25ChartInstance) {
+            window.pm25ChartInstance.destroy();
+        }
+
+        window.pm25ChartInstance = new Chart(
+            document.getElementById("pm25Chart"),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Average (India)",
+                            data: avg,
+                            backgroundColor: "#2ecc71", // Solid Green
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Max (Worst Location)",
+                            data: max,
+                            backgroundColor: "#e74c3c", // Solid Red
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Min (Best Location)",
+                            data: min,
+                            backgroundColor: "#3498db", // Solid Blue
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,   // no ctrl needed
+                            },
+                            zoom: {
+
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+</script>
+
+<script>
+    /**
+     * Updates all pollutant graphs for a specific station clicked on the map.
+     */
+    function updateStationGraph(stationId, stationName) {
+        // Update the UI Header
+        const titleElem = document.getElementById("stateTitle");
+        if(titleElem) titleElem.innerText = "Station Analysis: " + stationName;
+
+        // Pollutant Configurations
+        const files = [
+            { file: "o3_india_daily.csv", canvas: "o3Chart" },
+            { file: "pm10_india_daily.csv", canvas: "pm10Chart" },
+            { file: "pm25_india_daily.csv", canvas: "pm25Chart" }
+        ];
+
+        // Fetch and process each file
+        files.forEach(config => {
+            fetch(config.file)
+                .then(res => {
+                    if (!res.ok) throw new Error(`${config.file} not found`);
+                    return res.text();
+                })
+                .then(csv => {
+                    const results = Papa.parse(csv, { header: true });
+                    const data = results.data;
+
+                    let labels = [];
+                    let values = [];
+
+                    data.forEach(row => {
+                        const datetime = row["datetime"];
+                        const val = parseFloat(row[stationId]);
+
+                        if (!datetime || isNaN(val)) return;
+
+                        // Formatting date for the X-axis
+                        const date = datetime.split("T")[0];
+                        labels.push(date);
+                        values.push(val);
+                    });
+
+                    // Trigger the dynamic draw function
+                    drawStationChart(labels, values, config.canvas, stationName);
+                })
+                .catch(err => console.error("Error loading station data:", err));
+        });
+    }
+
+    /**
+     * Dynamically draws a line chart for a specific pollutant on its designated canvas.
+     */
+    function drawStationChart(labels, values, canvasId, stationName) {
+        let chartInstanceKey;
+        let datasetLabel = "";
+        let lineColor = "#3498db";
+        let yAxisTitle = "";
+
+        // Determine settings based on which canvas we are drawing to
+        switch (canvasId) {
+            case "o3Chart":
+                chartInstanceKey = "o3ChartInstance";
+                datasetLabel = `O3 Trend: ${stationName}`;
+                lineColor = "#2ecc71"; // Green
+                yAxisTitle = "O3 (µg/m³)";
+                break;
+            case "pm10Chart":
+                chartInstanceKey = "pm10ChartInstance";
+                datasetLabel = `PM10 Trend: ${stationName}`;
+                lineColor = "#f1c40f"; // Yellow
+                yAxisTitle = "PM10 (µg/m³)";
+                break;
+            case "pm25Chart":
+                chartInstanceKey = "pm25ChartInstance";
+                datasetLabel = `PM2.5 Trend: ${stationName}`;
+                lineColor = "#e67e22"; // Orange
+                yAxisTitle = "PM2.5 (µg/m³)";
+                break;
+            default:
+                chartInstanceKey = "tempChartInstance";
+                datasetLabel = `Trend: ${stationName}`;
+                yAxisTitle = "Level";
+        }
+
+        // 1. Destroy the specific instance for THIS pollutant to free the canvas
+        if (window[chartInstanceKey]) {
+            window[chartInstanceKey].destroy();
+        }
+
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+
+        // 2. Create the new chart and store it in its specific global variable
+        window[chartInstanceKey] = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: datasetLabel,
+                    data: values,
+                    borderColor: lineColor,
+                    backgroundColor: `${lineColor}22`, // Light fill (approx 13% opacity)
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: { display: true },
+                    zoom: {
+                        pan: { enabled: true, mode: 'x' },
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            mode: 'x'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: yAxisTitle },
+                        ticks: { color: '#64748b' }
+                    },
+                    x: {
+                        ticks: { maxTicksLimit: 10, color: '#64748b' }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
