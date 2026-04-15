@@ -462,7 +462,7 @@
 
 
     // LOAD NATIONAL GEOJSON
-    fetch('./india_states.geojson')
+    fetch('../map/india_states.geojson')
         .then(res => {
             if (!res.ok) throw new Error("GeoJSON not found");
             return res.json();
@@ -517,7 +517,7 @@
     // =============================
     // CONFIG
     // =============================
-    const CSV_PATH = 'o3_india_daily.csv';
+    const CSV_PATH = '../pollutant_data/o3_india_daily.csv';
 
     // =============================
     // LOAD + PROCESS
@@ -649,7 +649,7 @@
     // =============================
     // CONFIG
     // =============================
-    const PM10_CSV_PATH = 'pm10_india_daily.csv';
+    const PM10_CSV_PATH = '../pollutant_data/pm10_india_daily.csv';
 
     // =============================
     // LOAD + PROCESS
@@ -781,7 +781,7 @@
     // =============================
     // CONFIG
     // =============================
-    const PM25_CSV_PATH = 'pm25_india_daily.csv';
+    const PM25_CSV_PATH = '../pollutant_data/pm25_india_daily.csv';
 
     // =============================
     // LOAD + PROCESS
@@ -934,7 +934,7 @@
 
         try {
             // 1. Fetch the local JSON file
-            const response = await fetch('live_aqi_data.json');
+            const response = await fetch('../pollutant_data/live_aqi_data.json');
             if (!response.ok) throw new Error("JSON file not found. Run your Python script!");
 
             const data = await response.json();
@@ -988,7 +988,7 @@
     // Execute when the page is fully loaded
     window.addEventListener('load', () => {
         // Replace 'yesterday_hourly_trend.csv' with your actual filename if different
-        renderPollutantCycle('yesterday_hourly_trend.csv');
+        renderPollutantCycle('../pollutant_data/yesterday_hourly_trend.csv');
     });
 
     /**

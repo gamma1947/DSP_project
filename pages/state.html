@@ -434,7 +434,7 @@
     // =========================
     // LOAD GEOJSON + HEATMAP
     // =========================
-    fetch(`./states_geojson/${stateFile}.geojson`)
+    fetch(`../map/states_geojson/${stateFile}.geojson`)
         .then(res => {
             if (!res.ok) throw new Error("GeoJSON not found");
             return res.json();
@@ -593,9 +593,9 @@
     // =============================
     // FILE PATHS
     // =============================
-    const CSV_PATH = 'o3_india_daily.csv';
-    const STATIONS_FILE = "india_stations.csv";
-    const STATE_FILE = `./states_geojson/${stateFile}.geojson`; // change state
+    const CSV_PATH = '../pollutant_data/o3_india_daily.csv';
+    const STATIONS_FILE = "../stations_data/india_stations.csv";
+    const STATE_FILE = `../map/states_geojson/${stateFile}.geojson`; // change state
 
 
     // =============================
@@ -765,7 +765,7 @@
     // =============================
     // CONFIG
     // =============================
-    const PM10_CSV_PATH = 'pm10_india_daily.csv';
+    const PM10_CSV_PATH = '../pollutant_data/pm10_india_daily.csv';
 
 
     // =============================
@@ -936,7 +936,7 @@
     // =============================
     // CONFIG
     // =============================
-    const PM25_CSV_PATH = 'pm25_india_daily.csv';
+    const PM25_CSV_PATH = '../pollutant_data/pm25_india_daily.csv';
     // =============================
     // LOAD EVERYTHING
     // =============================
@@ -1111,9 +1111,9 @@
 
         // Pollutant Configurations
         const files = [
-            { file: "o3_india_daily.csv", canvas: "o3Chart" },
-            { file: "pm10_india_daily.csv", canvas: "pm10Chart" },
-            { file: "pm25_india_daily.csv", canvas: "pm25Chart" }
+            { file: "../pollutant_data/o3_india_daily.csv", canvas: "o3Chart" },
+            { file: "../pollutant_data/pm10_india_daily.csv", canvas: "pm10Chart" },
+            { file: "../pollutant_data/pm25_india_daily.csv", canvas: "pm25Chart" }
         ];
 
         // Fetch and process each file
