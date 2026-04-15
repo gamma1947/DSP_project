@@ -42,7 +42,9 @@
                 "map metrics"
                 "map pollutants"
                 "co2-trend co2-trend"
-                "extra extra";
+                "extra extra"
+                "pm25 pm25"
+                "pm10 pm10";
         }
 
         .header {
@@ -217,6 +219,49 @@
             height: 200px !important;
             width: 100% !important;
         }
+        .o3-section {
+            grid-area: extra;
+            height: 500px;   /* 🔥 THIS FIXES STRETCHING */
+        }
+
+        .o3-section canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+        .pm10-section {
+            grid-area: pm10;
+            height: 500px;   /* 🔥 THIS FIXES STRETCHING */
+        }
+
+        .pm10-section canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+        .pm25-section {
+            grid-area: pm25;
+            height: 500px;   /* 🔥 THIS FIXES STRETCHING */
+        }
+
+        .pm25-section canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 3px solid rgba(44, 62, 80, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -251,13 +296,24 @@
         </div>
 
         <div class="card pollutants-section">
-            <h3 style="margin-top:0">Pollutants Daily</h3>
-            <div id="pollutantCharts">
+            <h3 style="margin-top:0">National 24-Hour Cycle of Yesterday</h3>
+            <div id="hourlyCycleContainer" style="height: 400px; width: 100%;">
+                <canvas id="hourlyCycleCanvas"></canvas>
             </div>
         </div>
-        <div class="card co2-section">
-            <h3 style="margin-top:0">CO2 3 Months Trend</h3>
-            <canvas id="co2TrendCanvas"></canvas>
+        <div class="card o3-section" height="250">
+            <h3>O3 Trend</h3>
+            <canvas id="o3Chart"></canvas>
+        </div>
+
+        <div class="card pm10-section" height="250">
+            <h3>PM10 Trend</h3>
+            <canvas id="pm10Chart"></canvas>
+        </div>
+
+        <div class="card pm25-section" height="250">
+            <h3>PM 2.5 Trend</h3>
+            <canvas id="pm25Chart"></canvas>
         </div>
 
     </div>
@@ -265,6 +321,9 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+
 <style>
     .pollutant-chart {
         margin-bottom: 15px;
@@ -281,6 +340,7 @@
         width: 100%;
     }
 </style>
+
 <script>
 
     // --- Data Generators ---
@@ -342,7 +402,9 @@
                     fill: true,
                     backgroundColor: gradient,
                     tension: 0.4,
-                    pointRadius: 0
+                    pointRadius: 0,
+                    pointHoverRadius: 5,   // 🔥 ADD THIS
+                    hitRadius: 10
                 }]
             },
             options: {
@@ -449,5 +511,560 @@
             map.fitBounds(stateLayer.getBounds());
         });
 </script>
+
+<!--O3 Script-->
+<script>
+    // =============================
+    // CONFIG
+    // =============================
+    const CSV_PATH = 'o3_india_daily.csv';
+
+    // =============================
+    // LOAD + PROCESS
+    // =============================
+    fetch(CSV_PATH)
+        .then(res => {
+            if (!res.ok) throw new Error("O3 CSV not found");
+            return res.text();
+        })
+        .then(csv => {
+
+            const lines = csv.split('\n');
+
+            let labels = [];
+            let avgData = [];
+            let maxData = [];
+            let minData = [];
+
+            lines.slice(1).forEach(line => {
+
+                if (!line.trim()) return;
+
+                const cols = line.split(',');
+
+                const datetime = cols[0];
+
+                // 🔥 KEY: take ALL station values
+                const values = cols
+                    .slice(1)
+                    .map(v => parseFloat(v))
+                    .filter(v => !isNaN(v) && v > 5 && v <= 300); // remove bad data
+
+                if (!datetime || values.length === 0) return;
+
+                const date = datetime.split("T")[0].split(" ")[0];
+
+                const sum = values.reduce((a, b) => a + b, 0);
+
+                labels.push(date);
+                avgData.push(sum / values.length);
+                maxData.push(Math.max(...values));
+                minData.push(Math.min(...values));
+            });
+
+            console.log("Days loaded:", labels.length);
+            console.log("Sample avg:", avgData[0]);
+
+            drawChart(labels, avgData, maxData, minData);
+        })
+        .catch(err => console.error("O3 Script Error:", err));
+
+
+    // =============================
+    // DRAW CHART
+    // =============================
+    function drawChart(labels, avg, max, min) {
+
+        if (window.o3ChartInstance) {
+            window.o3ChartInstance.destroy();
+        }
+
+        window.o3ChartInstance = new Chart(
+            document.getElementById("o3Chart"),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Average (India)",
+                            data: avg,
+                            backgroundColor: "#2ecc71", // Solid Green
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Max (Worst Location)",
+                            data: max,
+                            backgroundColor: "#e74c3c", // Solid Red
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Min (Best Location)",
+                            data: min,
+                            backgroundColor: "#3498db", // Solid Blue
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,   // no ctrl needed
+                            },
+                            zoom: {
+
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+</script>
+
+<!--PM10 Script-->
+<script>
+    // =============================
+    // CONFIG
+    // =============================
+    const PM10_CSV_PATH = 'pm10_india_daily.csv';
+
+    // =============================
+    // LOAD + PROCESS
+    // =============================
+    fetch(PM10_CSV_PATH)
+        .then(res => {
+            if (!res.ok) throw new Error("Pm 10 CSV not found");
+            return res.text();
+        })
+        .then(csv => {
+
+            const lines = csv.split('\n');
+
+            let labels = [];
+            let avgData = [];
+            let maxData = [];
+            let minData = [];
+
+            lines.slice(1).forEach(line => {
+
+                if (!line.trim()) return;
+
+                const cols = line.split(',');
+
+                const datetime = cols[0];
+
+                // 🔥 KEY: take ALL station values
+                const values = cols
+                    .slice(1)
+                    .map(v => parseFloat(v))
+                    .filter(v => !isNaN(v) && v > 5 && v <= 300); // remove bad data
+
+                if (!datetime || values.length === 0) return;
+
+                const date = datetime.split("T")[0].split(" ")[0];
+
+                const sum = values.reduce((a, b) => a + b, 0);
+
+                labels.push(date);
+                avgData.push(sum / values.length);
+                maxData.push(Math.max(...values));
+                minData.push(Math.min(...values));
+            });
+
+            console.log("Days loaded:", labels.length);
+            console.log("Sample avg:", avgData[0]);
+
+            drawPM10Chart(labels, avgData, maxData, minData);
+        })
+        .catch(err => console.error("PM10 Script Error:", err));
+
+
+    // =============================
+    // DRAW CHART
+    // =============================
+    function drawPM10Chart(labels, avg, max, min) {
+
+        if (window.pm10ChartInstance) {
+            window.pm10ChartInstance.destroy();
+        }
+
+        window.pm10ChartInstance = new Chart(
+            document.getElementById("pm10Chart"),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Average (India)",
+                            data: avg,
+                            backgroundColor: "#2ecc71", // Solid Green
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Max (Worst Location)",
+                            data: max,
+                            backgroundColor: "#e74c3c", // Solid Red
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Min (Best Location)",
+                            data: min,
+                            backgroundColor: "#3498db", // Solid Blue
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,   // no ctrl needed
+                            },
+                            zoom: {
+
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+</script>
+
+<!--PM2.5 Script-->
+<script>
+    // =============================
+    // CONFIG
+    // =============================
+    const PM25_CSV_PATH = 'pm25_india_daily.csv';
+
+    // =============================
+    // LOAD + PROCESS
+    // =============================
+    fetch(PM25_CSV_PATH)
+        .then(res => {
+            if (!res.ok) throw new Error("Pm 2.5 CSV not found");
+            return res.text();
+        })
+        .then(csv => {
+
+            const lines = csv.split('\n');
+
+            let labels = [];
+            let avgData = [];
+            let maxData = [];
+            let minData = [];
+
+            lines.slice(1).forEach(line => {
+
+                if (!line.trim()) return;
+
+                const cols = line.split(',');
+
+                const datetime = cols[0];
+
+                // 🔥 KEY: take ALL station values
+                const values = cols
+                    .slice(1)
+                    .map(v => parseFloat(v))
+                    .filter(v => !isNaN(v) && v > 5 && v <= 300); // remove bad data
+
+                if (!datetime || values.length === 0) return;
+
+                const date = datetime.split("T")[0].split(" ")[0];
+
+                const sum = values.reduce((a, b) => a + b, 0);
+
+                labels.push(date);
+                avgData.push(sum / values.length);
+                maxData.push(Math.max(...values));
+                minData.push(Math.min(...values));
+            });
+
+            console.log("Days loaded:", labels.length);
+            console.log("Sample avg:", avgData[0]);
+
+            drawPM25Chart(labels, avgData, maxData, minData);
+        })
+        .catch(err => console.error("PM10 Script Error:", err));
+
+
+    // =============================
+    // DRAW CHART
+    // =============================
+    function drawPM25Chart(labels, avg, max, min) {
+
+        if (window.pm25ChartInstance) {
+            window.pm25ChartInstance.destroy();
+        }
+
+        window.pm25ChartInstance = new Chart(
+            document.getElementById("pm25Chart"),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Average (India)",
+                            data: avg,
+                            backgroundColor: "#2ecc71", // Solid Green
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Max (Worst Location)",
+                            data: max,
+                            backgroundColor: "#e74c3c", // Solid Red
+                            borderRadius: 4
+                        },
+                        {
+                            label: "Min (Best Location)",
+                            data: min,
+                            backgroundColor: "#3498db", // Solid Blue
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,   // no ctrl needed
+                            },
+                            zoom: {
+
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+</script>
+
+
+
+
+<script>
+    /**
+     * INITIALIZATION
+     * We wrap everything in a 'load' event to ensure the HTML (KPI cards)
+     * is fully rendered before JavaScript tries to touch it.
+     */
+    window.addEventListener('load', () => {
+        // Initial fetch
+        fetchLiveJsonData();
+
+        // Refresh data every 1 minute (60,000ms) to stay synced with your Python script
+        setInterval(fetchLiveJsonData, 60000);
+    });
+
+    /**
+     * CORE FUNCTION: Fetch and Update
+     * This reads 'live_aqi_data.json' generated by your Python script.
+     */
+    async function fetchLiveJsonData() {
+        const titleElem = document.getElementById("stateTitle");
+
+        try {
+            // 1. Fetch the local JSON file
+            const response = await fetch('live_aqi_data.json');
+            if (!response.ok) throw new Error("JSON file not found. Run your Python script!");
+
+            const data = await response.json();
+
+            // 2. Select the KPI elements
+            const kpiValues = document.querySelectorAll(".kpi-value");
+            const kpiTitles = document.querySelectorAll(".kpi-title");
+
+            // 3. Update the values if the cards exist
+            if (kpiValues.length >= 3) {
+                // Set Labels
+                kpiTitles[0].innerText = "PM 2.5 (Live)";
+                kpiTitles[1].innerText = "PM 10 (Live)";
+                kpiTitles[2].innerText = "O3 (Live)";
+
+                // Set Values (Fallback to -- if data is missing)
+                kpiValues[0].innerText = data.pm25 || "--";
+                kpiValues[1].innerText = data.pm10 || "--";
+                kpiValues[2].innerText = data.o3 || "--";
+
+                // 4. Dynamic Color Logic
+                // PM 2.5
+                kpiValues[0].style.color = (data.pm25 > 150) ? "#e74c3c" : "#2ecc71";
+                // PM 10
+                kpiValues[1].style.color = (data.pm10 > 100) ? "#e67e22" : "#2ecc71";
+                // O3
+                kpiValues[2].style.color = (data.o3 > 100) ? "#f1c40f" : "#3498db";
+            }
+
+            // 5. Update Header with the Python-generated timestamp
+            if (titleElem) {
+                titleElem.innerHTML = `National Air Quality <span style="font-size:14px; color:#e67e22; font-weight:400; margin-left:10px;">● LIVE (${data.timestamp})</span>`;
+            }
+
+            console.log("Live Dashboard Updated:", data.timestamp);
+
+        } catch (error) {
+            console.warn("Live Data Sync Error:", error.message);
+            if (titleElem) {
+                titleElem.innerText = "National Air Quality (Syncing with Python...)";
+            }
+        }
+    }
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Execute when the page is fully loaded
+    window.addEventListener('load', () => {
+        // Replace 'yesterday_hourly_trend.csv' with your actual filename if different
+        renderPollutantCycle('yesterday_hourly_trend.csv');
+    });
+
+    /**
+     * Fetches the Hourly CSV and renders a multi-line trend chart
+     */
+    function renderPollutantCycle(csvPath) {
+        const container = document.getElementById('hourlyCycleContainer'); // Use the new ID
+        if (!container) return;
+
+        fetch(csvPath)
+            .then(response => {
+                if (!response.ok) throw new Error("CSV file not found");
+                return response.text();
+            })
+            .then(csvText => {
+                const results = Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true
+                });
+
+                const data = results.data.filter(row => row.hour !== null);
+                const labels = data.map(row => `${row.hour}:00`);
+                const pm25Values = data.map(row => row.pm25);
+                const pm10Values = data.map(row => row.pm10);
+                const o3Values = data.map(row => Math.max(0, row.o3));
+
+                const ctx = document.getElementById('hourlyCycleCanvas').getContext('2d');
+
+                // Destroy existing chart if it exists to prevent overlap
+                if (window.hourlyCycleChartInstance) {
+                    window.hourlyCycleChartInstance.destroy();
+                }
+
+                window.hourlyCycleChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'PM 2.5',
+                                data: pm25Values,
+                                borderColor: '#e67e22',
+                                backgroundColor: 'rgba(230, 126, 34, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'PM 10',
+                                data: pm10Values,
+                                borderColor: '#3498db',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Ozone (O3)',
+                                data: o3Values,
+                                borderColor: '#2ecc71',
+                                borderDash: [5, 5],
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            })
+            .catch(err => {
+                container.innerHTML = `<p style="color:orange; font-size:12px;">Waiting for yesterday_hourly_trend.csv...</p>`;
+            });
+    }
+</script>
+
 </body>
 </html>
