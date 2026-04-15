@@ -1,5 +1,5 @@
 # Project status report 20th march
-[report](Reports/mini-project_report__air_quality_monitoring_dashboard.pdf)
+[report](reports/mini-project_report__air_quality_monitoring_dashboard.pdf)
 
 # Air Quality Monitoring Dashboard
 
