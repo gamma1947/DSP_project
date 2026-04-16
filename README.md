@@ -1,61 +1,61 @@
-# [cite_start]Air Quality Dynamics in India: A Spatial-Temporal Dashboard for Urban Sensor Networks [cite: 1, 2]
+# Air Quality Dynamics in India: A Spatial-Temporal Dashboard for Urban Sensor Networks
 
-[cite_start]An interactive **Air Quality Monitoring Dashboard** built using real-world environmental sensor data[cite: 10].  
-[cite_start]This project was developed as a mini-project for the **DS3294: Data Science Practice** course[cite: 3].
+An interactive **Air Quality Monitoring Dashboard** built using real-world environmental sensor data.  
+This project was developed as a mini-project for the **DS3294: Data Science Practice** course.
 
-[cite_start]The dashboard ingests data from the **OpenAQ API**, processes it through a robust data-cleaning pipeline, and visualizes spatial and temporal pollution trends using an interactive, web-based interface[cite: 12, 15, 204].
+The dashboard ingests data from the **OpenAQ API**, processes it through a robust data-cleaning pipeline, and visualizes spatial and temporal pollution trends using an interactive, web-based interface.
 
-[cite_start]The primary objective is to uncover temporal pollution patterns and spatial variations while addressing real-world data imperfections like outliers, noise, and spatial sparsity[cite: 11, 15, 16].
+The primary objective is to uncover temporal pollution patterns and spatial variations while addressing real-world data imperfections like outliers, noise, and spatial sparsity.
 
 ---
 
 ## Project Overview
 
-[cite_start]Urban air quality monitoring relies heavily on heterogeneous sensor networks[cite: 18]. [cite_start]Real-world data from these networks often contains issues such as spatial sparsity, missing observations, and sensor noise[cite: 20, 22]. 
+Urban air quality monitoring relies heavily on heterogeneous sensor networks. Real-world data from these networks often contains issues such as spatial sparsity, missing observations, and sensor noise. 
 
 This project develops a reproducible analytics and visualization pipeline that:
-1. [cite_start]Collects air quality data from public sensor networks within India[cite: 12, 36].
-2. [cite_start]Focuses on three primary and secondary pollutants impacting public health: PM10, PM2.5, and Ozone (O3)[cite: 13, 14].
-3. [cite_start]Employs Inverse Distance Weighting (IDW) interpolation to estimate pollutant concentrations in unmonitored areas[cite: 75, 76].
-4. [cite_start]Automates the real-time detection of extreme pollution events against official government thresholds[cite: 31].
-5. [cite_start]Provides an intuitive drill-down HTML/JavaScript interface for seamless visual analysis[cite: 204, 210].
+1. Collects air quality data from public sensor networks within India.
+2. Focuses on three primary and secondary pollutants impacting public health: PM10, PM2.5, and Ozone (O3).
+3. Employs Inverse Distance Weighting (IDW) interpolation to estimate pollutant concentrations in unmonitored areas.
+4. Automates the real-time detection of extreme pollution events against official government thresholds.
+5. Provides an intuitive drill-down HTML/JavaScript interface for seamless visual analysis.
 
 ---
 
 ## Technologies Used
 
-* [cite_start]**Backend & Data Processing:** Python, Pandas, GeoPandas[cite: 49].
-* [cite_start]**Data Source:** OpenAQ API[cite: 35].
-* [cite_start]**Frontend / Dashboard:** HTML, JavaScript, Chart.js[cite: 213].
-* [cite_start]**Spatial Analysis:** GeoJSON for spatial filtering, Scipy/NumPy for IDW implementation[cite: 49, 140].
+* **Backend & Data Processing:** Python, Pandas, GeoPandas.
+* **Data Source:** OpenAQ API.
+* **Frontend / Dashboard:** HTML, JavaScript, Chart.js.
+* **Spatial Analysis:** GeoJSON for spatial filtering, Scipy/NumPy for IDW implementation.
 
 ---
 
 ## Data Source: OpenAQ API
 
-[cite_start]Air quality observations were obtained from the **OpenAQ platform**, focusing exclusively on monitoring stations located within India via a geospatial filtering approach[cite: 35, 36, 48].
+Air quality observations were obtained from the **OpenAQ platform**, focusing exclusively on monitoring stations located within India via a geospatial filtering approach.
 
-* [cite_start]**Latest Data:** Acquired using a 3-hour window to buffer inconsistencies[cite: 51, 52].
-* [cite_start]**Historical Data:** Analyzed for the time range of January 2026 to March 2026[cite: 54].
-* [cite_start]**API Pagination:** Looping algorithms were implemented to bypass the API's 1000 data point limit[cite: 68].
+* **Latest Data:** Acquired using a 3-hour window to buffer inconsistencies.
+* **Historical Data:** Analyzed for the time range of January 2026 to March 2026.
+* **API Pagination:** Looping algorithms were implemented to bypass the API's 1000 data point limit.
 
 ---
 
 ## Variable Selection
 
-[cite_start]Three pollutants were selected due to their severe health impacts and extensive sensor coverage[cite: 14, 46]:
+Three pollutants were selected due to their severe health impacts and extensive sensor coverage:
 
 | Pollutant | Description | Reason for Selection |
 | :--- | :--- | :--- |
-| **PM10** | Particulate Matter $<10\mu m$ | [cite_start]Captures coarse dust and pollution[cite: 39]. |
-| **PM2.5** | Particulate Matter $<2.5\mu m$ | [cite_start]Most harmful to human health[cite: 39]. |
-| **O3** | Ozone | [cite_start]Secondary pollutant, important for photochemical smog[cite: 39]. |
+| **PM10** | Particulate Matter <10µm | Captures coarse dust and pollution. |
+| **PM2.5** | Particulate Matter <2.5µm | Most harmful to human health. |
+| **O3** | Ozone | Secondary pollutant, important for photochemical smog. |
 
 ---
 
 ## System Architecture
 
-[cite_start]The project follows a modular pipeline architecture[cite: 204, 205, 206]:
+The project follows a modular pipeline architecture:
 
 1. **Data Ingestion** (OpenAQ API)
 2. **Temporal Resampling** (Hourly averages)
@@ -69,33 +69,31 @@ This project develops a reproducible analytics and visualization pipeline that:
 ## Data Processing Pipeline
 
 ### 1. Data Cleaning & Outlier Mitigation
-[cite_start]To mitigate discrepancies caused by bad sensor readings, negative values were removed, and data was capped at the 99th percentile before interpolation[cite: 146, 147].
+To mitigate discrepancies caused by bad sensor readings, negative values were removed, and data was capped at the 99th percentile before interpolation.
 
 ### 2. Spatial Interpolation (IDW)
-[cite_start]To transform point-based measurements into a continuous spatial surface, **Inverse Distance Weighting (IDW)** was utilized[cite: 75]. The unsampled grid point is calculated as:
-[cite_start]$Z(x_{i},y_{i})=\frac{\sum_{k=1}^{n}w_{k}Z_{k}}{\sum_{k=1}^{n}w_{k}}$ [cite: 80]
-[cite_start]A power parameter of $p=2$ and a synthetic grid resolution of 0.25 were used to balance computational efficiency with local influence[cite: 86, 94]. 
+To transform point-based measurements into a continuous spatial surface, **Inverse Distance Weighting (IDW)** was utilized. The unsampled grid point is calculated as a weighted average of all available station values, where the weight is defined by the inverse of the distance squared (p=2). A synthetic grid resolution of 0.25 was used to balance computational efficiency with local influence. 
 
 ### 3. Grid Generation & Masking
-[cite_start]Interpolated values falling outside the official administrative boundaries of India were nullified (NaN) using a spatial mask derived from a high-resolution shapefile[cite: 96].
+Interpolated values falling outside the official administrative boundaries of India were nullified (NaN) using a spatial mask derived from a high-resolution shapefile.
 
 ### 4. Extreme Pollution Detection
-[cite_start]Hourly sensor averages are evaluated against government thresholds[cite: 221, 223]:
-* [cite_start]**PM10:** 100 $\mu g/m^{3}$ [cite: 231]
-* [cite_start]**PM2.5:** 60 $\mu g/m^{3}$ [cite: 231]
-* [cite_start]**Ozone (O3):** 100 $\mu g/m^{3}$ [cite: 231]
-[cite_start]Specific location IDs exceeding these limits are dynamically flagged[cite: 228].
+Hourly sensor averages are evaluated against government thresholds:
+* **PM10:** 100 µg/m³
+* **PM2.5:** 60 µg/m³
+* **Ozone (O3):** 100 µg/m³
+Specific location IDs exceeding these limits are dynamically flagged.
 
 ---
 
 ## Dashboard Features
 
-[cite_start]The HTML/JS based dashboard provides[cite: 246]:
+The HTML/JS based dashboard provides:
 
-* [cite_start]**Interactive Spatial Mapping:** An interactive map of India with an interpolated heatmap overlay to visualize concentration gradients[cite: 248, 249].
-* [cite_start]**Dynamic Drill-Down Navigation:** Users can select a specific state, view regional stations, and click individual stations to instantly load historical time-series data without page navigation[cite: 250, 251, 268].
-* [cite_start]**Real-time Charting:** Line charts rendered via Chart.js displaying daily/hourly statistics with zooming, panning, and detailed tooltips[cite: 213, 214].
-* [cite_start]**Extreme Pollution Alerts:** A dedicated panel listing stations currently recording pollution events beyond acceptable government limits[cite: 269, 271].
+* **Interactive Spatial Mapping:** An interactive map of India with an interpolated heatmap overlay to visualize concentration gradients.
+* **Dynamic Drill-Down Navigation:** Users can select a specific state, view regional stations, and click individual stations to instantly load historical time-series data without page navigation.
+* **Real-time Charting:** Line charts rendered via Chart.js displaying daily/hourly statistics with zooming, panning, and detailed tooltips.
+* **Extreme Pollution Alerts:** A dedicated panel listing stations currently recording pollution events beyond acceptable government limits.
 
 ---
 
@@ -105,3 +103,24 @@ This project develops a reproducible analytics and visualization pipeline that:
 ```bash
 git clone [https://github.com/gamma1947/aqi_monitoring_dashboard-.git](https://github.com/gamma1947/aqi_monitoring_dashboard-.git)
 cd aqi_monitoring_dashboard-
+```
+## Author Contributions
+
+* **Ashik Sufaid. S**: Led the backend data ingestion pipeline and implemented the Inverse Distance Weighting (IDW) spatial interpolation to resolve sensor sparsity.
+* **Ajay Kasaudhan**: Engineered the interactive user interface and developed all data visualization components, including the dynamic drill-down maps and time-series charts.
+* **Hitesh CK**: Responsible for defining and characterizing extreme pollution events, integrating official government threshold logic to automate the real-time detection of critical pollutant levels across the monitoring network.
+
+## Acknowledgements
+
+* **Course Instructor:** Prof. Bedarth Goswami, for guidance throughout the DS3294: Data Science Practice course.
+* [cite_start]**AI Assistance:** The authors acknowledge the use of Large Language Models (LLMs), specifically OpenAI's ChatGPT and Google's Gemini, during the development of this project[cite: 278, 279]. [cite_start]These tools assisted with code debugging, optimizing scripts, and refining the formatting and prose of the project documentation[cite: 279]. [cite_start]All AI-generated content and suggestions were critically reviewed, verified, and edited by the authors to ensure technical accuracy and maintain the integrity of the original scientific contribution[cite: 280].
+
+## Future Enhancements
+
+* **Sensor Calibration Weighting:** Implement a weighting system to account for the reliability and calibration history of different sensor types (e.g., high-fidelity government stations vs. low-cost rural sensors).
+* **Temporal Interpolation:** Develop robust methods for handling temporal data holes without introducing misleading assumptions during irregular reporting intervals.
+* **Extended Pollutant Tracking:** Expand the pipeline to monitor additional secondary pollutants and meteorological data (temperature, humidity) to better model photochemical smog formations.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
