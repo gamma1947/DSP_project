@@ -6,3 +6,4 @@ requests
 matplotlib
 xarray
 shapely
+functools
