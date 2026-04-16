@@ -113,7 +113,7 @@ cd aqi_monitoring_dashboard-
 ## Acknowledgements
 
 * **Course Instructor:** Prof. Bedarth Goswami, for guidance throughout the DS3294: Data Science Practice course.
-* [cite_start]**AI Assistance:** The authors acknowledge the use of Large Language Models (LLMs), specifically OpenAI's ChatGPT and Google's Gemini, during the development of this project[cite: 278, 279]. [cite_start]These tools assisted with code debugging, optimizing scripts, and refining the formatting and prose of the project documentation[cite: 279]. [cite_start]All AI-generated content and suggestions were critically reviewed, verified, and edited by the authors to ensure technical accuracy and maintain the integrity of the original scientific contribution[cite: 280].
+* **AI Assistance:** The authors acknowledge the use of Large Language Models (LLMs), specifically OpenAI's ChatGPT and Google's Gemini, during the development of this project. These tools assisted with code debugging, optimizing scripts, and refining the formatting and prose of the project documentation.All AI-generated content and suggestions were critically reviewed, verified, and edited by the authors to ensure technical accuracy and maintain the integrity of the original scientific contribution.
 
 ## Future Enhancements
 
