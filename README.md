@@ -1,259 +1,126 @@
-# Project status report 20th march
-[report](reports/mini-project_report__air_quality_monitoring_dashboard.pdf)
-
-# Air Quality Monitoring Dashboard
+# Air Quality Dynamics in India: A Spatial-Temporal Dashboard for Urban Sensor Networks
 
 An interactive **Air Quality Monitoring Dashboard** built using real-world environmental sensor data.  
-This project was developed as part of the **Data Science Practices course** taught by Prof. Bedarth Goswami at IISER Pune.
+This project was developed as a mini-project for the **DS3294: Data Science Practice** course.
 
-The dashboard ingests data from **OpenAQ**, processes it through a structured data-cleaning pipeline, and visualizes pollution trends using an interactive web interface built with **Streamlit**.
+The dashboard ingests data from the **OpenAQ API**, processes it through a robust data-cleaning pipeline, and visualizes spatial and temporal pollution trends using an interactive, web-based interface.
 
-The goal of the project is to understand **temporal pollution patterns, spatial variation across monitoring stations, and the impact of imperfect sensor data on environmental interpretation.**
-
----
-
-# Project Overview
-
-Urban air quality monitoring relies heavily on distributed sensor networks that collect environmental data across different locations and time intervals. However, such real-world data often contains issues such as:
-
-- Missing observations  
-- Sensor noise  
-- Calibration drift  
-- Inconsistent reporting frequencies  
-
-This project develops a **reproducible data pipeline and visualization dashboard** that:
-
-1. Collects air quality data from public sensor networks  
-2. Cleans and harmonizes the data  
-3. Handles missing and noisy readings  
-4. Aggregates pollution data across different time scales  
-5. Provides interactive visualizations for exploration and analysis  
+The primary objective is to uncover temporal pollution patterns and spatial variations while addressing real-world data imperfections like outliers, noise, and spatial sparsity.
 
 ---
 
-# Technologies Used
+## Project Overview
 
-- Python  
-- Streamlit — interactive dashboard interface  
-- OpenAQ API — air quality data source  
-- Pandas — data cleaning and manipulation  
-- NumPy — numerical operations  
-- Matplotlib / Plotly — data visualization  
+Urban air quality monitoring relies heavily on heterogeneous sensor networks. Real-world data from these networks often contains issues such as spatial sparsity, missing observations, and sensor noise. 
+
+This project develops a reproducible analytics and visualization pipeline that:
+1. Collects air quality data from public sensor networks within India.
+2. Focuses on three primary and secondary pollutants impacting public health: PM10, PM2.5, and Ozone (O3).
+3. Employs Inverse Distance Weighting (IDW) interpolation to estimate pollutant concentrations in unmonitored areas.
+4. Automates the real-time detection of extreme pollution events against official government thresholds.
+5. Provides an intuitive drill-down HTML/JavaScript interface for seamless visual analysis.
 
 ---
 
-# Data Source: OpenAQ API
+## Technologies Used
 
-Air quality observations used in this project were obtained from the **OpenAQ platform**, an open-source initiative that aggregates air quality measurements from governmental and research-grade monitoring networks worldwide.
+* **Backend & Data Processing:** Python, Pandas, GeoPandas.
+* **Data Source:** OpenAQ API.
+* **Frontend / Dashboard:** HTML, JavaScript, Chart.js.
+* **Spatial Analysis:** GeoJSON for spatial filtering, Scipy/NumPy for IDW implementation.
 
-The OpenAQ API provides programmatic access to environmental measurements including:
+---
 
-- Particulate matter concentrations
-- Gaseous pollutants
-- Sensor metadata
-- Monitoring station locations
-- Measurement timestamps
+## Data Source: OpenAQ API
 
-For this project, the API was used to retrieve data from monitoring stations across **India**, including information about pollutant concentration, reporting intervals, and station metadata.
+Air quality observations were obtained from the **OpenAQ platform**, focusing exclusively on monitoring stations located within India via a geospatial filtering approach.
 
-API requests were implemented using Python and structured into a reproducible ingestion pipeline that automatically retrieves and formats the data for downstream processing.
+* **Latest Data:** Acquired using a 3-hour window to buffer inconsistencies.
+* **Historical Data:** Analyzed for the time range of January 2026 to March 2026.
+* **API Pagination:** Looping algorithms were implemented to bypass the API's 1000 data point limit.
 
-More information: https://docs.openaq.org/
+---
 
-# Variable and Location Selection
+## Variable Selection
 
-### 1. Pollutant Variables Selected
+Three pollutants were selected due to their severe health impacts and extensive sensor coverage:
 
-Air Quality Index (AQI) calculations typically rely on a subset of key atmospheric pollutants that are known to have strong health impacts. For this project, six commonly monitored pollutants were selected from the OpenAQ dataset:
+| Pollutant | Description | Reason for Selection |
+| :--- | :--- | :--- |
+| **PM10** | Particulate Matter <10µm | Captures coarse dust and pollution. |
+| **PM2.5** | Particulate Matter <2.5µm | Most harmful to human health. |
+| **O3** | Ozone | Secondary pollutant, important for photochemical smog. |
 
-| Pollutant | Description |
-|-----------|-------------|
-| PM2.5 | Fine particulate matter smaller than 2.5 µm |
-| PM10 | Particulate matter smaller than 10 µm |
-| NO₂ | Nitrogen dioxide |
-| SO₂ | Sulfur dioxide |
-| CO | Carbon monoxide |
-| O₃ | Ozone |
+---
 
-These pollutants were selected because they are the **primary components used in most national AQI frameworks**, including those used by environmental agencies such as the Central Pollution Control Board (CPCB).
-
-Filtering the dataset to these variables ensures consistency in comparing pollution trends across monitoring stations.
-
-### 2. Monitoring station selection
-
-Montoring stations with all 6 sensors available are only selected.
-Some cities contain multiple monitoring stations, while others may only have a single reporting sensor.
-
-To ensure consistent city-level comparisons, the following strategy was used:
-
-- **Cities with a single monitoring station**  
-  The station measurements are used directly as the representative air quality record for that location.
-
-- **Cities with multiple monitoring stations**  
-  Pollutant concentrations are aggregated across stations using the **mean value** to obtain a city-level estimate.
-
-This aggregation helps reduce the influence of **sensor-specific noise or calibration differences** while still allowing smaller urban centers with limited monitoring infrastructure to be included in the analysis.
-
-# System Architecture
+## System Architecture
 
 The project follows a modular pipeline architecture:
 
-OpenAQ API  
-↓  
-Data Ingestion  
-↓  
-Data Cleaning & Preprocessing  
-- Missing value handling  
-- Outlier detection  
-- Sensor noise filtering  
-↓  
-Data Aggregation  
-- Hourly  
-- Daily  
-- Monthly  
-↓  
-Visualization Dashboard (Streamlit)
+1. **Data Ingestion** (OpenAQ API)
+2. **Temporal Resampling** (Hourly averages)
+3. **Data Cleaning & Filtering** (Outlier mitigation, spatial masking)
+4. **Spatial Interpolation** (Inverse Distance Weighting)
+5. **Extreme Event Detection** (Threshold evaluation)
+6. **Frontend Rendering** (HTML, Chart.js)
 
 ---
 
-# Data Processing Pipeline
+## Data Processing Pipeline
 
-### 1. Data Ingestion
-Air quality data is fetched using the **OpenAQ API**, covering multiple monitoring stations.
+### 1. Data Cleaning & Outlier Mitigation
+To mitigate discrepancies caused by bad sensor readings, negative values were removed, and data was capped at the 99th percentile before interpolation.
 
-### 2. Data Harmonization
-Sensor data is standardized to ensure consistency in:
+### 2. Spatial Interpolation (IDW)
+To transform point-based measurements into a continuous spatial surface, **Inverse Distance Weighting (IDW)** was utilized. The unsampled grid point is calculated as a weighted average of all available station values, where the weight is defined by the inverse of the distance squared (p=2). A synthetic grid resolution of 0.25 was used to balance computational efficiency with local influence. 
 
-- Units  
-- Timestamp formats  
-- Reporting frequency
+### 3. Grid Generation & Masking
+Interpolated values falling outside the official administrative boundaries of India were nullified (NaN) using a spatial mask derived from a high-resolution shapefile.
 
-### 3. Data Cleaning
-The cleaning pipeline addresses:
-
-- Missing sensor readings  
-- Outliers in pollution measurements  
-- Noise in sensor signals  
-- Inconsistent or duplicated timestamps  
-
-### 4. Missing Data Strategies
-
-Two different strategies were explored:
-
-1. **Interpolation-based approach**
-2. **Model-based imputation**
-
-### 5. Spatial grouping of data
-1. Coordinate Mapping: Link each sensor station ID to its precise GPS coordinates (Latitude/Longitude)
-2. Define Clusters: Group sensors by administrative boundaries (like city wards) or proximity-based algorithms (like K-Means).
-3. Aggregate Metrics: Calculate mean or median pollution levels ($PM_{2.5}$ or $NO_{2}$) for each identified group
-4. Visualize: Plot these spatial groups on an interactive map to communicate regional differences and data uncertainty.
-
-These methods were compared to understand how data-repair strategies affect environmental interpretation.
+### 4. Extreme Pollution Detection
+Hourly sensor averages are evaluated against government thresholds:
+* **PM10:** 100 µg/m³
+* **PM2.5:** 60 µg/m³
+* **Ozone (O3):** 100 µg/m³
+Specific location IDs exceeding these limits are dynamically flagged.
 
 ---
 
-# Dashboard Features
+## Dashboard Features
 
-The dashboard provides:
+The HTML/JS based dashboard provides:
 
-### Interactive Visualizations
-- Temporal pollution trends  
-- Station-wise comparison  
-- Pollutant concentration over time  
-
-### Multi-scale Analysis
-Data is aggregated across:
-
-- Hourly averages  
-- Daily averages  
-- Monthly trends  
-
-### Extreme Pollution Events
-The system identifies and visualizes:
-
-- Pollution spikes  
-- Episode duration  
-- Relative intensity across stations  
+* **Interactive Spatial Mapping:** An interactive map of India with an interpolated heatmap overlay to visualize concentration gradients.
+* **Dynamic Drill-Down Navigation:** Users can select a specific state, view regional stations, and click individual stations to instantly load historical time-series data without page navigation.
+* **Real-time Charting:** Line charts rendered via Chart.js displaying daily/hourly statistics with zooming, panning, and detailed tooltips.
+* **Extreme Pollution Alerts:** A dedicated panel listing stations currently recording pollution events beyond acceptable government limits.
 
 ---
 
-# Running the Dashboard
+## Running the Dashboard
 
 ### Clone the Repository
-
 ```bash
-git clone https://github.com/yourusername/air-quality-dashboard.git
-cd air-quality-dashboard
+git clone [https://github.com/gamma1947/aqi_monitoring_dashboard-.git](https://github.com/gamma1947/aqi_monitoring_dashboard-.git)
+cd aqi_monitoring_dashboard-
 ```
+## Author Contributions
 
-### Install Dependencies
+* **Ashik Sufaid. S**: Led the backend data ingestion pipeline and implemented the Inverse Distance Weighting (IDW) spatial interpolation to resolve sensor sparsity.
+* **Ajay Kasaudhan**: Engineered the interactive user interface and developed all data visualization components, including the dynamic drill-down maps and time-series charts.
+* **Hitesh CK**: Responsible for defining and characterizing extreme pollution events, integrating official government threshold logic to automate the real-time detection of critical pollutant levels across the monitoring network.
 
-```bash
-pip install -r requirements.txt
-```
+## Acknowledgements
 
-### Run the Streamlit App
+* **Course Instructor:** Prof. Bedarth Goswami, for guidance throughout the DS3294: Data Science Practice course.
+* **AI Assistance:** The authors acknowledge the use of Large Language Models (LLMs), specifically OpenAI's ChatGPT and Google's Gemini, during the development of this project. These tools assisted with code debugging, optimizing scripts, and refining the formatting and prose of the project documentation.All AI-generated content and suggestions were critically reviewed, verified, and edited by the authors to ensure technical accuracy and maintain the integrity of the original scientific contribution.
 
-```bash
-streamlit run app.py
-```
+## Future Enhancements
 
-The dashboard will open in your browser.
+* **Sensor Calibration Weighting:** Implement a weighting system to account for the reliability and calibration history of different sensor types (e.g., high-fidelity government stations vs. low-cost rural sensors).
+* **Temporal Interpolation:** Develop robust methods for handling temporal data holes without introducing misleading assumptions during irregular reporting intervals.
+* **Extended Pollutant Tracking:** Expand the pipeline to monitor additional secondary pollutants and meteorological data (temperature, humidity) to better model photochemical smog formations.
 
----
+## License
 
-# Project Structure
-
-```
-air-quality-dashboard
-│
-├── data/                 # Raw and processed datasets
-├── api/                  # API fetching scripts
-├── cleaning/             # Data cleaning pipeline
-├── dashboard/            # Streamlit dashboard
-├── utils/                # Helper functions
-│
-├── app.py                # Main Streamlit application
-├── requirements.txt
-└── README.md
-```
-
----
-
-# Key Insights Explored
-
-- Temporal trends in air pollution levels  
-- Spatial variation across monitoring stations  
-- Impact of missing-data strategies on environmental analysis  
-- Identification of extreme pollution episodes  
-
----
-
-# Limitations
-
-- Sensor networks may have **calibration drift** over time  
-- Data availability varies across monitoring stations  
-- Imputation methods can introduce bias in interpretation  
-- Some sensors report at irregular time intervals  
-
-These limitations highlight the importance of **careful preprocessing and transparency in environmental analytics.**
-
----
-
-# Contributors
-
-| Name | Contribution |
-|-----|-------------|
-| Ajay Kasaudhan | GUI development and dashboard design |
-| Ashik | API integration and data ingestion |
-| Hitesh CK | Spatial data analysis |
-| Sahil Rajput | Data cleaning and interpolation methods |
-
----
-
-# 📚 Course Information
-
-This project was completed as a **group project for the Data Science Practices course** at **IISER Pune**.
-
-Instructor: **Prof. Bedarth Goswami**
+This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.

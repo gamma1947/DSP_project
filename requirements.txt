@@ -1,0 +1,9 @@
+pandas
+geopandas
+numpy
+scipy
+requests
+matplotlib
+xarray
+shapely
+functools
