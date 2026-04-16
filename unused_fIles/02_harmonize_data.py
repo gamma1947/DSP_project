@@ -17,10 +17,10 @@ import json
 from pathlib import Path
 
 RAW_DATA_FILE = "openaq_raw_data.csv"
-HARMONIZED_DATA_FILE = "../data/openaq_harmonized_data.csv"
-HARMONIZATION_LOG_FILE = "../data/harmonization_log.txt"
-UNIT_MAPPINGS_FILE = "../data/unit_mappings.json"
-HARMONIZATION_REPORT_FILE = "../data/harmonization_report.csv"
+HARMONIZED_DATA_FILE = "data/openaq_harmonized_data.csv"
+HARMONIZATION_LOG_FILE = "data/harmonization_log.txt"
+UNIT_MAPPINGS_FILE = "data/unit_mappings.json"
+HARMONIZATION_REPORT_FILE = "data/harmonization_report.csv"
 
 
 def log_message(msg):

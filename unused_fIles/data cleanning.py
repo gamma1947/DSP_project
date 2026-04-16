@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 
 
-RAW_FILE = "../data/openaq_raw_data.csv"
-NULL_REPORT_FILE = "../data/report_null_values.csv"
-MESSY_REPORT_FILE = "../data/report_messy_data.csv"
-OUTLIER_REPORT_FILE = "../data/report_outliers.csv"
-NOISE_REPORT_FILE = "../data/report_noise.csv"
-CLEAN_FILE = "../data/openaq_cleaned_data.csv"
+RAW_FILE = "data/openaq_raw_data.csv"
+NULL_REPORT_FILE = "data/report_null_values.csv"
+MESSY_REPORT_FILE = "data/report_messy_data.csv"
+OUTLIER_REPORT_FILE = "data/report_outliers.csv"
+NOISE_REPORT_FILE = "data/report_noise.csv"
+CLEAN_FILE = "data/openaq_cleaned_data.csv"
 
 
 def load_raw_data(path=RAW_FILE):

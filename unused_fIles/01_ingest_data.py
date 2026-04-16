@@ -26,7 +26,7 @@ load_dotenv(dotenv_path=env_path, override=True)
 
 BASE_URL = "https://api.openaq.org/v3"
 RAW_DATA_FILE = "openaq_raw_data.csv"
-INGESTION_LOG_FILE = "../data/ingestion_log.txt"
+INGESTION_LOG_FILE = "data/ingestion_log.txt"
 
 
 def log_message(msg):
@@ -256,7 +256,7 @@ def main():
     # Unless API preference is explicitly set
     delhi_data = None
     if not try_api_first:
-        delhi_data = load_delhi_pm25_data("../data/df_2021_to_2022_pm25_delhi.csv")
+        delhi_data = load_delhi_pm25_data("data/df_2021_to_2022_pm25_delhi.csv")
     
     if delhi_data is not None and not try_api_first:
         log_message("\n✓ Using existing Delhi PM2.5 data (API-independent)")
