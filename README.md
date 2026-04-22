@@ -103,7 +103,11 @@ The HTML/JS based dashboard provides:
 ```bash
 git clone [https://github.com/gamma1947/aqi_monitoring_dashboard-.git](https://github.com/gamma1947/aqi_monitoring_dashboard-.git)
 cd aqi_monitoring_dashboard-
+cd pages
+
 ```
+open india.html
+
 ## Author Contributions
 
 * **Ashik Sufaid. S**: Led the backend data ingestion pipeline and implemented the Inverse Distance Weighting (IDW) spatial interpolation to resolve sensor sparsity.
